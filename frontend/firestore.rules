@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+match /databases/{database}/documents {
+
+// Helper function to check for allowed email domains.
+function isAllowedDomain() {
+  // request.auth is available on authenticated requests.
+  // request.auth.token.email contains the user's email from their auth token.
+  return request.auth.token.email.matches(".*@student\\.sfbu\\.edu") ||
+         request.auth.token.email.matches(".*@sfbu\\.edu");
+}
+
+// Rules for the 'users' collection.
+match /users/{userId} {
+  // CREATE: Allow a user to create their own profile document,
+  // but ONLY if they have an email from an allowed domain.
+  allow create: if request.auth.uid == userId && isAllowedDomain();
+  
+  // READ: Allow a user to read their own document.
+  // This allows the app to fetch the user's role and display name after they log in.
+  allow read: if request.auth.uid == userId;
+}
+
+// Rules for the 'tabs' subcollection inside an 'owner' document.
+match /owner/{userId}/tabs/{tabId} {
+  // A user can read, write, update, and delete tabs if their UID
+  // matches the {userId} in the path.
+  allow read, write: if request.auth.uid == userId;
+}
+
+// Rules for the 'messages' subcollection inside a 'users' document.
+match /users/{userId}/tab_id/{tab_id}/messages/{messageId} {
+  // A user can read, write, update, and delete messages if their UID
+  // matches the {userId} in the path.
+  allow read, write: if request.auth.uid == userId;
+}
+
+}
+}
