@@ -1,0 +1,77 @@
+# =========================================
+# General
+# =========================================
+
+# OS generated files
+.DS_Store
+
+# IDE and editor configuration
+.idea/
+.vscode/
+
+# =========================================
+# Python
+# =========================================
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =========================================
+# Project-Specific
+# =========================================
+
+# --- Secrets and Credentials ---
+# Ignore environment variables and API keys
+.env
+
+# Ignore Firebase and Google credentials
+firebase_config_keys.json
+podcast_google_credentials.json
+service-account-key.json
+google-services.json
+GoogleService-Info.plist
+
+# --- Local Data and Databases ---
+# Ignore the persistent ChromaDB vector store
+chroma_db_persistent/
+
+# Ignore other local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Temporary Files and Uploads ---
+# Ignore the directory for temporary file uploads
+uploads/
+
+# --- Logs ---
+*.log
+logs/
+firestore-debug.log*
