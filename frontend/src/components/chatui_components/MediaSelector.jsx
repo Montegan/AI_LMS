@@ -57,24 +57,30 @@ const MediaSelector = ({ mediaSelector, setMediaSelector }) => {
     }
   };
 
-  const handleYoutubeUpload = async () => {
-    if (youtubeUrl != "") {
-      const webResponse = await axios.post(
-        "http://127.0.0.1:5000//load_youtube",
-        {
-          webUrl: youtubeUrl,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
 
-      setUploadStatus(webResponse.data.message);
-      webResponse && setyoutubeUrl("");
-    }
-  };
+// Avoided using youtube-transcript-api due to issues with the langchain api iteself. the is an open 
+// bug report on github.
+// https://github.com/langchain-ai/langchain-community/issues/290
+
+//   const handleYoutubeUpload = async () => {
+//     if (youtubeUrl != "") {
+//       const webResponse = await axios.post(
+//         "http://127.0.0.1:5000/load_youtube",
+//         {
+//           webUrl: youtubeUrl,
+//         },
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//         }
+//       );
+
+//       setUploadStatus(webResponse.data.message);
+//       console.log(webResponse);
+//       webResponse && setyoutubeUrl("");
+//     }
+//   };
 
   useEffect(() => {
     if (UploadStatus !== "") {
@@ -160,7 +166,7 @@ const MediaSelector = ({ mediaSelector, setMediaSelector }) => {
           )}
         </div>
 
-        <div className=" bg-[#4b4b4b96] text-white flex flex-col gap-2 rounded-md p-2">
+        {/* <div className=" bg-[#4b4b4b96] text-white flex flex-col gap-2 rounded-md p-2">
           <label htmlFor="Youtube">
             <FaYoutube color="red" size={25} />
           </label>
@@ -180,7 +186,7 @@ const MediaSelector = ({ mediaSelector, setMediaSelector }) => {
               Upload
             </button>
           </div>
-        </div>
+        </div> */}
 
         <div className=" bg-[#4b4b4b96] flex text-white gap-2 flex-col rounded-md p-2">
           <label htmlFor="WebLink">

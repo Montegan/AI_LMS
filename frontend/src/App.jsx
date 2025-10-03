@@ -67,8 +67,8 @@ export default function App() {
       path="/faculty_attendance"
       element={<FacultyAttendance/>}
     />
-    <Route path="/Student" element={<Student/>} />
-    <Route path="/Teacher" element={<Teacher/>} />
+    <Route path="/student" element={<Student/>} />
+    <Route path="/teacher" element={<Teacher/>} />
       </Route>
 
       <Route path="*" element={<Forbiden/>} />

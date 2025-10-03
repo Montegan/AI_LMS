@@ -15,10 +15,10 @@ const Login = () => {
   // Navigate to /student or /faculty if the user is logged in
   useEffect(() => {
     if (isAuthenticated) {
-        navigate(user.role === 'faculty' ? '/faculty' : '/student');
+        navigate(user.role === 'faculty' ? '/teacher' : '/student');
     }
     else {
-        navigate('/login');
+        navigate('/');
     }
 }, [isAuthenticated, navigate]);
 

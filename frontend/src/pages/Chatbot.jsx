@@ -50,11 +50,10 @@ const ChatInput = ({ currentTab, language }) => {
   const [inputMessage, setInputMessage] = useState("");
   const { user } = useAuth();
   const { theme } = useTheme();
-
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !currentTab) return;
-
-    const currentuser = user.uid;
+  const [userInput, setUserInput] = useState("");
+  const handleSubmit = async (e) => {
+    const currentuser = auth.currentUser.uid;
+    // const send_ref = collection(db, currentuser);
     const send_ref = collection(
       db,
       "users",
@@ -63,16 +62,28 @@ const ChatInput = ({ currentTab, language }) => {
       currentTab,
       "messages"
     );
-
     await addDoc(send_ref, {
       userId: currentuser,
       human_message: inputMessage,
       created_at: serverTimestamp(),
     });
 
-    // Here you would typically send to your AI backend
-    // const response = await sendToAI(inputMessage, language);
-    
+    const backendMessage = await axios.post(
+      "http://127.0.0.1:5000/ragEndpoint",
+      {
+        prompt: inputMessage,
+        currentuser: currentuser,
+        currentTab: currentTab,
+        language: language,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("message sent");
+    console.log(backendMessage);
     setInputMessage("");
   };
 
@@ -82,12 +93,12 @@ const ChatInput = ({ currentTab, language }) => {
         type="text"
         value={inputMessage}
         onChange={(e) => setInputMessage(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+        onKeyUp={(e) => e.key === 'Enter' && handleSubmit()}
         placeholder="Type your message..."
         className={`flex-1 p-3 ${theme === 'dark' ? 'bg-gray-800 text-[#ffffff]' : 'bg-gray-50 text-[#000000]'} rounded-lg border border-gray-600 focus:outline-none focus:border-[#00416B]`}
       />
       <button
-        onClick={handleSendMessage}
+        onClick={handleSubmit}
         className={`flex items-center text-[1.5rem] justify-center h-10 w-[100px]  p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-gray-50 hover:text-[#1e38a2]':'text-gray-800 hover:text-[#1e38a2]' }`
       }      >
         <BsFillSendFill />
@@ -96,26 +107,7 @@ const ChatInput = ({ currentTab, language }) => {
   );
 };
 
-// Media Selector Component (replacing shadcn Media_selector)
-// const MediaSelector = ({ setMediaSelector, mediaSelector }) => {
-//   if (!mediaSelector) return null;
 
-//   return (
-//     <div className="absolute bottom-20 left-4 bg-[#2a2a2a] border border-gray-600 rounded-lg p-4 shadow-lg">
-//       <div className="flex flex-col gap-2">
-//         <button className="text-white hover:text-[#00416B] transition-colors">
-//           Upload File
-//         </button>
-//         <button className="text-white hover:text-[#00416B] transition-colors">
-//           Upload Image
-//         </button>
-//         <button className="text-white hover:text-[#00416B] transition-colors">
-//           Upload Audio
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
 
 const Chatbot = () => {
   const { theme } = useTheme();
