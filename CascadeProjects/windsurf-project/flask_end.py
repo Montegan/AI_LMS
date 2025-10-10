@@ -94,7 +94,6 @@ app.config['MAIL_PASSWORD'] = appMAIL_PASSWORD
 # Replace with your email
 app.config['MAIL_DEFAULT_SENDER'] = appMAIL_DEFAULT_SENDER
 
-
 # Initialize Flask-Mail
 mail = Mail(app)
 sound = None

@@ -44,7 +44,6 @@ const MessageLoad = ({ items }) => {
     </div>
   );
 };
-
 // Chat Input Component (replacing shadcn ChatInput)
 const ChatInput = ({ currentTab, language }) => {
   const [inputMessage, setInputMessage] = useState("");
@@ -86,7 +85,6 @@ const ChatInput = ({ currentTab, language }) => {
     console.log(backendMessage);
     setInputMessage("");
   };
-
   return (
     <div className="flex gap-2 items-center justify-center flex-1">
       <input
@@ -106,9 +104,6 @@ const ChatInput = ({ currentTab, language }) => {
     </div>
   );
 };
-
-
-
 const Chatbot = () => {
   const { theme } = useTheme();
   const { user, loading, error } = useAuth();
@@ -178,7 +173,6 @@ const Chatbot = () => {
         console.log("I was able to load");
         console.log(snapshot.docs.map((doc) => doc.id));
       });
-
       console.log(currentTab);
       console.log(user);
       return () => {
@@ -186,7 +180,6 @@ const Chatbot = () => {
       };
     }
   }, []);
-
   const handleTabCreate = async (e) => {
     const current_user = user.uid;
     const collection_ref = collection(db, "owner", current_user, "tabs");
@@ -365,8 +358,7 @@ const Chatbot = () => {
                       currentTab !== ""
                         ? "p-1 w-fit flex items-center  absolute right-0 top-2"
                         : "hidden"
-                    }
-                  >
+                    }>
                     <label htmlFor="language">
                       <MdGTranslate className={`text-[2rem] opacity-40 transition-colors ${
                         theme === 'dark' 
@@ -453,7 +445,6 @@ const Chatbot = () => {
                     </select>
                   </div>
                 </div>
-
                   {/*chat area*/}
                 <div className={`relative h-[90vh] w-[73vw]  overflow-y-scroll overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] flex flex-col gap-10 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
                   {tabs.length > 0 && currentTab != "" ? (

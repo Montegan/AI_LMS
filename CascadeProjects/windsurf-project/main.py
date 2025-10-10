@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Body
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Body, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import BaseModel, EmailStr, Field
 from contextlib import asynccontextmanager
 import os
+from rich import console
 import torch
 import numpy as np
 import whisper
@@ -27,7 +28,9 @@ from chromadab import (
     vector_store, docs_embed_documents, powerpoint_embed_documents, 
     excel_embed_documents, csv_embed_documents, text_embed_documents
 )
-
+from app.schemas.chatbot import RagRequest
+from app.api.v1.endpoints.ragendpoint import router as ragendpoint
+from app.core.firebase_config import get_db
 # --- Suppress Warnings ---
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -37,11 +40,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 app_state = {}
 
 # --- Pydantic Models for Request/Response Validation ---
-class RagRequest(BaseModel):
-    prompt: str
-    currentuser: str
-    currentTab: str
-    language: str
+
 
 class WebRequest(BaseModel):
     webUrl: str
@@ -68,61 +67,60 @@ async def lifespan(app: FastAPI):
         # For now, we'll let it fail on API calls.
 
     # Initialize LLM
-    app_state["llm"] = ChatOpenAI()
+    app.state.llm= ChatOpenAI()
+    # app_state["llm"] = ChatOpenAI()
     print("INFO:     ChatOpenAI model initialized.")
 
     # Load Whisper Model
     try:
-        app_state["audio_model"] = whisper.load_model("base")
+        app.state.audio_model= whisper.load_model("base")
+        # app_state["audio_model"] = whisper.load_model("base")
         print("INFO:     Whisper model loaded successfully.")
     except Exception as e:
         print(f"ERROR:    Failed to load Whisper model: {e}")
-        app_state["audio_model"] = None
-
+        # app_state["audio_model"] = None
+        app.state.audio_model= None
     # Initialize Firebase
     try:
-        cred_path = os.getenv("certificates")
-        if cred_path and os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
-            firebase_admin.initialize_app(cred)
-            app_state["db"] = firestore.client()
-            print("INFO:     Firebase initialized successfully.")
-        else:
-            print("WARNING:  Firebase credentials not found. Firebase features will be disabled.")
-            app_state["db"] = None
+        # app_state["db"] = get_db()
+        app.state.db = get_db()
     except Exception as e:
         print(f"ERROR:    Firebase initialization failed: {e}")
-        app_state["db"] = None
+        # app_state["db"] = None
+        app.state.db = None
 
     # Configure Email
     mail_config = ConnectionConfig(
-        MAIL_USERNAME=os.getenv("appMAIL_USERNAME", ""),
-        MAIL_PASSWORD=os.getenv("appMAIL_PASSWORD", ""),
-        MAIL_FROM=os.getenv("appMAIL_DEFAULT_SENDER", ""),
-        MAIL_PORT=int(os.getenv("appMAIL_PORT", 587)),
-        MAIL_SERVER=os.getenv("appMAIL_SERVER", ""),
+        MAIL_USERNAME=os.getenv("MAIL_USERNAME", ""),
+        MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", ""),
+        MAIL_FROM=os.getenv("MAIL_DEFAULT_SENDER", ""),
+        MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
+        MAIL_SERVER=os.getenv("MAIL_SERVER", ""),
         MAIL_STARTTLS=True,
         MAIL_SSL_TLS=False,
     )
-    app_state["mail"] = FastMail(mail_config)
+    app.state.mail = FastMail(mail_config)
     print("INFO:     Mail service configured.")
 
     yield
 
     # --- Shutdown Logic ---
     print("INFO:     Shutting down application...")
-    app_state.clear()
+    app.state.clear()
 
 # --- FastAPI App Initialization ---
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for simplicity, restrict in production
+    allow_origins=["http://localhost:5173"],  # Allow all origins for simplicity, restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Include API Router ---
+app.include_router(ragendpoint)
 
 # --- Mock Functions (to be replaced by actual implementations) ---
 # These are placeholders until the logic is moved to separate files.
@@ -140,56 +138,69 @@ async def compose_email(draft: str, language: str) -> Dict[str, str]:
 async def root():
     return {"message": "Welcome to the FastAPI Backend for your AI App"}
 
-@app.post("/ragEndpoint")
-async def rag_endpoint_handler(req: RagRequest):
-    db = app_state.get("db")
-    llm = app_state.get("llm")
 
-    if not llm:
-        raise HTTPException(status_code=500, detail="LLM not initialized")
+######################################################### RAG Feature ends here ###########################################################
 
-    # 1. Moderation (using real function)
-    moderation_result = await anti_promptInjection(req.prompt)
-    if moderation_result == "Y":
-        ai_message = "Your input contains potentially malicious content and cannot be processed."
-    else:
-        # 2. RAG Chain Logic
-        system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. Give a detailed answer. If you don't know the answer, just say you don't know in a respectful manner. The answer should be in language: {language}.
-        Context: {context}
-        Answer:"""
-        
-        prompt_template = ChatPromptTemplate.from_messages([
-            ("system", system_prompt),
-            ("user", "{question}")
-        ])
+# @app.post("/ragEndpoint")
+# async def rag_endpoint_handler(req: RagRequest):
+#     db = app_state.get("db")
+#     llm = app_state.get("llm")
+#     print(req)
+#     if not llm:
+#         raise HTTPException(status_code=500, detail="LLM not initialized")
 
-        retriever = vector_store.as_retriever(search_kwargs={"k": 4})
+#     # 1. Moderation (using real function)
+#     moderation_result = await anti_promptInjection(req.prompt)
+#     if moderation_result == "Y":
+#         ai_message = "Your input contains potentially malicious content and cannot be processed."
+#     else:
+#         # 2. RAG Chain Logic
+#         system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. Give a detailed answer. If you don't know the answer, just say you don't know in a respectful manner. The answer should be in language: {language}.
+#         Context: {context}
+#         Answer:"""  
+#         prompt_template = ChatPromptTemplate.from_messages([
+#             ("system", system_prompt),
+#             ("user", "{question}")
+#         ])
 
-        # Simplified chain for clarity
-        rag_chain = (
-            {"context": itemgetter("question") | retriever, "question": itemgetter("question"), "language": itemgetter("language")}
-            | prompt_template
-            | llm
-            | StrOutputParser()
-        )
+#         retriever = vector_store.as_retriever(search_kwargs={"k": 4})
 
-        ai_message = await rag_chain.ainvoke({"question": req.prompt, "language": req.language})
+#         # Simplified chain for clarity
+#         rag_chain = (
+#             {"context": itemgetter("question") | retriever, "question": itemgetter("question"), "language": itemgetter("language")}
+#             | prompt_template
+#             | llm
+#             | StrOutputParser()
+#         )
 
-    # 3. Save to Firebase
-    if db:
-        try:
-            doc_ref = db.collection("users", req.currentuser, "tab_id", req.currentTab, "messages").document()
-            doc_ref.set({
-                "userId": req.currentuser,
-                "ai_message": ai_message,
-                "created_at": firestore.SERVER_TIMESTAMP,
-            })
-            return {"message_id": doc_ref.id, "ai_message": ai_message}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Firebase error: {e}")
+#         ai_message = await rag_chain.ainvoke({"question": req.prompt, "language": req.language})
+
+#     # 3. Save to Firebase
+#     if db:
+#         try:
+#             doc_ref = (
+#             db.collection("users")
+#               .document(req.currentuser)
+#               .collection("tab_id")
+#               .document(req.currentTab)
+#               .collection("messages")
+#               .document()                # auto-id
+#         )   
+#             doc_ref.set({
+#                 "userId": req.currentuser,
+#                 "ai_message": ai_message,
+#                 "created_at": firestore.SERVER_TIMESTAMP,
+#             })
+#             print(doc_ref)
+
+            
+#             return {"message_id": doc_ref.id, "ai_message": ai_message}
+#         except Exception as e:
+#             raise HTTPException(status_code=500, detail=f"Firebase error: {e}")
     
-    return {"ai_message": ai_message, "warning": "Firebase not configured, message not saved."}
+#     return {"ai_message": ai_message, "warning": "Firebase not configured, message not saved."}
 
+######################################################### RAG Feature ends here ###########################################################
 
 @app.post("/load_db")
 async def load_document_handler(file: UploadFile = File(...)):

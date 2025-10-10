@@ -2,7 +2,7 @@ import React from 'react'
 import FacultyDashboard from '../components/FacultyDashboard';
 import { useAuth } from '../context/auth_context';
 import { Navigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import FacultySidebar from '../components/FacultySidebar.jsx';
 import { useTheme } from '../context/Theme';
 
 const Faculty = () => {
@@ -18,7 +18,7 @@ const Faculty = () => {
     return (
         <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <nav className="h-full flex-shrink-0">
-                <Sidebar/>
+                <FacultySidebar/>
             </nav>
             <main className={`flex-1 h-full overflow-y-auto ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
                 <div className="p-8">

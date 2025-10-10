@@ -23,7 +23,7 @@ dist-ssr
 # Build outputs
 build/
 out/
-
+2firebase_config.js
 # Cache directories
 .cache/
 .parcel-cache/
