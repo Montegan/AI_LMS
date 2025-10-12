@@ -11,6 +11,7 @@ import {
   FaSun, 
   FaMoon 
 } from 'react-icons/fa';
+import { MdRecordVoiceOver } from "react-icons/md";
 import { RiRobot2Fill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom"; 
 import { useActiveContext } from "../context/active_nav_context";
@@ -78,6 +79,12 @@ const Sidebar = () => {
                         id="FaEnvelope"
                         label="Email" 
                         onClick={() => {navigate('/EmailService'); toggleActive('FaEnvelope')}}
+                    />
+                    <NavButton 
+                        icon={<MdRecordVoiceOver />} 
+                        id="MdRecordVoiceOver"
+                        label="Voice" 
+                        onClick={() => {navigate('/VoiceChat'); toggleActive('MdRecordVoiceOver')}}
                     />
                     <NavButton 
                         icon={<FaPodcast />} 

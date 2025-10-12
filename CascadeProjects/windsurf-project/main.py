@@ -17,6 +17,7 @@ from app.api.v1.endpoints.ragendpoint import router as ragendpoint
 from app.core.firebase_config import firebase_config
 from app.api.v1.endpoints.fileupload import router as file_upload_router
 from app.api.v1.endpoints.email_endpoint import router as email_endpoint
+from app.api.v1.endpoints.voice_endpoint import router as voice_endpoint
 # --- Suppress Warnings ---
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -101,7 +102,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Allow all origins for simplicity, restrict in production
+    allow_origins=["*"],  # Allow all origins for simplicity, restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -115,6 +116,8 @@ app.include_router(ragendpoint)
 app.include_router(file_upload_router)
 
 app.include_router(email_endpoint)
+
+app.include_router(voice_endpoint)
 
 # --- API Endpoints ---
 
