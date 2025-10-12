@@ -12,7 +12,6 @@ LLM = ChatOpenAI(model="gpt-4o-mini")
 string_parser = StrOutputParser()
 json_parser = JsonOutputParser()
 
-
 async def service_classification(user_input):
     system_prompt = """ You will be provided with queries related to creating tables or general question answering tasks. The queries will be delimited with {delimiter} characters.
                 Your task is to Classify each query into a table catagory or general catagory based on the provided catagories below.

@@ -462,6 +462,8 @@ const Chatbot = () => {
                   <MediaSelector
                     setMediaSelector={setMediaSelector}
                     mediaSelector={mediaSelector}
+                    currentuser={user.uid}
+                    currentTab={currentTab}
                   />
                   <div ref={chatEndRef}></div>
                 </div>

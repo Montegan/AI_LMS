@@ -3,6 +3,7 @@ from typing import List
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
 class Settings(BaseSettings):
     # Project
     PROJECT_NAME: str | None = None

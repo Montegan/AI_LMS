@@ -23,7 +23,7 @@ vector_store = Chroma(
     embedding_function=embeddings
 )
 
-async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: str = None) -> str:
+async def embed_and_store_documents(loader_class, file_path: str = None) -> str:
     """
     Asynchronously loads, splits, and embeds documents into the Chroma vector store.
 
@@ -37,7 +37,7 @@ async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: st
     """
     try:
         # Initialize the specific loader with its argument
-        loader = loader_class(loader_arg)
+        loader = loader_class(file_path)
         documents = loader.load()
         
         # Split the documents into smaller chunks
@@ -47,7 +47,7 @@ async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: st
         vector_store.add_documents(docs)
         
         # Persist the changes to disk
-        vector_store.persist()
+        # vector_store.PersistentClient()
         
         return f"{loader_class.__name__} processed and embedded successfully."
     except Exception as e:
@@ -77,7 +77,7 @@ async def save_upload_file_tmp(upload_file: UploadFile) -> str:
 
 async def pdf_embed_documents(file: UploadFile) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(PyPDFLoader, file_path, file_path)
+    return await embed_and_store_documents(PyPDFLoader, file_path)
 
 async def web_embed_documents(url: str) -> str:
     return await embed_and_store_documents(WebBaseLoader, url)
@@ -87,20 +87,20 @@ async def youtube_embed_documents(url: str) -> str:
 
 async def docs_embed_documents(file: UploadFile) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(Docx2txtLoader, file_path, file_path)
+    return await embed_and_store_documents(Docx2txtLoader, file_path)
 
 async def powerpoint_embed_documents(file: UploadFile) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(UnstructuredPowerPointLoader, file_path, file_path)
+    return await embed_and_store_documents(UnstructuredPowerPointLoader, file_path)
 
 async def excel_embed_documents(file: UploadFile) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(UnstructuredExcelLoader, file_path, file_path)
+    return await embed_and_store_documents(UnstructuredExcelLoader, file_path)
 
 async def csv_embed_documents(file: UploadFile) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(CSVLoader, file_path, file_path)
+    return await embed_and_store_documents(CSVLoader, file_path)
 
 async def text_embed_documents(file: UploadFile) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(TextLoader, file_path, file_path)
+    return await embed_and_store_documents(TextLoader, file_path)

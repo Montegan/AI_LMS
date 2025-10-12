@@ -1,10 +1,10 @@
 from fastapi import HTTPException
 from firebase_admin import firestore
-from app.core.firebase_config import get_db
+from app.core.firebase_config import firebase_config
 
 class RagDataHandler:
     def __init__(self):
-        self.db = get_db()
+        self.db = firebase_config.get_db()
     
     def save_message(self, message: str, currentuser: str, currentTab: str):
         try:

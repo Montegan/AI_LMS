@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import List, Any
 from fastapi import UploadFile
 import os
-
+from rich import console
 # Load environment variables
 load_dotenv()
 
@@ -19,6 +19,7 @@ persist_directory = "chroma_db_persistent"
 
 # Initialize the vector store. It will be created if it doesn't exist.
 vector_store = Chroma(
+    collection_name="chroma_db_persistent",
     persist_directory=persist_directory,
     embedding_function=embeddings
 )
@@ -35,6 +36,8 @@ async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: st
     Returns:
         A status message.
     """
+
+    print(loader_arg)
     try:
         # Initialize the specific loader with its argument
         loader = loader_class(loader_arg)
@@ -46,11 +49,12 @@ async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: st
         # Add the document chunks to the vector store
         vector_store.add_documents(docs)
         
-        # Persist the changes to disk
-        vector_store.persist()
+        # # Persist the changes to disk
+        # vector_store.persist()
         
         return f"{loader_class.__name__} processed and embedded successfully."
     except Exception as e:
+        print(e)
         return f"An error occurred: {e}"
     finally:
         # Clean up the temporary file if it exists

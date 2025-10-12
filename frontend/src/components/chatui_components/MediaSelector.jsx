@@ -3,7 +3,7 @@ import axios from "axios";
 import { CgWebsite } from "react-icons/cg";
 import { FaYoutube } from "react-icons/fa";
 
-const MediaSelector = ({ mediaSelector, setMediaSelector }) => {
+const MediaSelector = ({ mediaSelector, setMediaSelector, currentuser, currentTab }) => {
   const [file, setfile] = useState("");
   const [UploadStatus, setUploadStatus] = useState("");
   const [webUrl, setWebUrl] = useState("");
@@ -18,16 +18,13 @@ const MediaSelector = ({ mediaSelector, setMediaSelector }) => {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("currentuser", currentuser);
+    formData.append("currentTab", currentTab);
 
     try {
       const response = await axios.post(
         "http://127.0.0.1:5000/load_db",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
 
       setUploadStatus(`${response.data.message}`);
@@ -44,6 +41,8 @@ const MediaSelector = ({ mediaSelector, setMediaSelector }) => {
         "http://127.0.0.1:5000/load_web",
         {
           webUrl: webUrl,
+          currentuser: currentuser,
+          currentTab: currentTab,
         },
         {
           headers: {
