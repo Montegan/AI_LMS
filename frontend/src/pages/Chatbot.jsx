@@ -236,7 +236,7 @@ const Chatbot = () => {
     console.log(Micon);
     const currentuser = user.uid;
     const backendMessage = await axios.post(
-      "http://127.0.0.1:5000/process_audio",
+      "http://127.0.0.1:5000/transcribe_audio",
       { currentuser: currentuser, currentTab: currentTab },
       {
         headers: {
@@ -252,7 +252,7 @@ const Chatbot = () => {
   };
 
   return (
-    <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
+    <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900' : 'bg-gray-50'}`}>
       <Sidebar/>
 
       {loading ? (

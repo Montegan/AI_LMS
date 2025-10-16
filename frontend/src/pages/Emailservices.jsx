@@ -6,7 +6,7 @@ import { FaPodcast } from "react-icons/fa6";
 import { BsChatLeftTextFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-
+import { useTheme } from "../context/Theme";
 const EmailService = () => {
   const [originalComment, setOriginalComment] = useState("");
   const [commentSummary, setCommentSummary] = useState("");
@@ -17,6 +17,8 @@ const EmailService = () => {
   const [subject, setSubject] = useState("");
   const [reciverAddress, setreciverAddress] = useState("");
   const [attachement, setAttachment] = useState("");
+
+  const { theme } = useTheme();
 
   const generateComment = async () => {
     const response = await axios.get(" http://127.0.0.1:5000/originalComment");
@@ -65,14 +67,14 @@ const EmailService = () => {
   };
 
   return (
-    <div className="text-white bg-black flex items-center h-[100vh] gap-6 w-full pt-6 px-4">
+    <div className={`${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900 text-white' : 'bg-white text-gray-900'} flex items-center h-[100vh] gap-6 w-full`}>
     <Sidebar/>
       <div className="grid max-sm:grid-cols-1  grid-cols-12 w-full gap-2 h-fit">
         <div className="h-fit min-h-[82vh]  pt-2 col-span-5 flex items-center flex-col ">
           <div className=" h-full min-h-[80vh] justify-end  w-full flex gap-2 flex-col">
             <label
               htmlFor="Original_Comment"
-              className="font-title font-bold opacity-35 text-left text-[1rem]"
+              className={`font-title font-bold opacity-35 text-left text-[1rem] ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
             >
               Playground
             </label>
@@ -80,7 +82,7 @@ const EmailService = () => {
               name="Original_Comment"
               placeholder="Start here ..."
               id="Original_Comment"
-              className=" h-full min-h-[72vh] w-full p-3 text-[1.1rem] focus:outline-none rounded-xl bg-[#191A23]"
+              className={`h-full min-h-[72vh] w-full p-3 text-[1.1rem] focus:outline-none rounded-xl ${theme === 'dark' ? 'bg-[#191A23] text-white' : 'bg-gray-100 text-gray-900'}`}
               value={originalComment}
               onChange={(e) => {
                 setOriginalComment(e.target.value);
@@ -90,7 +92,7 @@ const EmailService = () => {
 
             <button
               onClick={generateEmail}
-              className="bg-green-50 self-center hover:bg-slate-300 active:bg-slate-400 p-2 text-black text-lg font-bold w-[25vw] rounded-md"
+              className="bg-green-500 self-center hover:bg-green-600 active:bg-green-700 p-2 text-black text-lg font-bold w-[25vw] rounded-md"
             >
               Generate Email
             </button>
@@ -101,18 +103,18 @@ const EmailService = () => {
           <div className="flex justify-between items-center w-full">
             <span
               htmlFor="customer_email"
-              className="font-title font-bold text-left opacity-35 text-[1rem]"
+              className={`font-title font-bold text-left opacity-35 text-[1rem] ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
             >
               Email
             </span>
             <div className="rounded-xl p-1 self-end  flex  w-fit">
               <label htmlFor="language" className="font-title text-[1.3rem] ">
-                <MdGTranslate className="text-slate-300 text-[1.6rem] hover:text-[#cacaca] " />
+                <MdGTranslate className={`text-[1.6rem] ${theme === 'dark' ? 'text-slate-300 hover:text-[#cacaca]' : 'text-gray-600 hover:text-gray-800'}`} />
               </label>
               <select
                 name="language"
                 id="language"
-                className=" focus:outline-none ml-3 text-slate-300 border-b-2 bg-transparent border-slate-400 w-[8vw]"
+                className={`focus:outline-none ml-3 border-b-2 bg-transparent w-[8vw] ${theme === 'dark' ? 'text-slate-300 border-slate-400' : 'text-gray-700 border-gray-400'}`}
                 value={language}
                 onChange={(e) => {
                   setLanguage(e.target.value);
@@ -139,7 +141,7 @@ const EmailService = () => {
                 id="emailSubject"
                 type="text"
                 placeholder="To:"
-                className=" h-fit w-full p-2 text-[1rem] focus:outline-none rounded-lg bg-[#191A23]"
+                className={`h-fit w-full p-2 text-[1rem] focus:outline-none rounded-lg ${theme === 'dark' ? 'bg-[#191A23] text-white' : 'bg-gray-100 text-gray-900'}`}
                 value={reciverAddress}
                 onChange={(e) => setreciverAddress(e.target.value)}
               />
@@ -155,7 +157,7 @@ const EmailService = () => {
                 id="emailSubject"
                 placeholder="Subject:"
                 type="text"
-                className=" h-fit w-full p-2 text-[1rem] focus:outline-none rounded-xl bg-[#191A23]"
+                className={`h-fit w-full p-2 text-[1rem] focus:outline-none rounded-xl ${theme === 'dark' ? 'bg-[#191A23] text-white' : 'bg-gray-100 text-gray-900'}`}
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
               />
@@ -165,7 +167,7 @@ const EmailService = () => {
                 name="customer_email"
                 placeholder="Draft:"
                 id="customer_email"
-                className="h-fit min-h-[58vh] w-full p-3 text-[0.9rem] focus:outline-none rounded-xl bg-[#191A23]"
+                className={`h-fit min-h-[58vh] w-full p-3 text-[0.9rem] focus:outline-none rounded-xl ${theme === 'dark' ? 'bg-[#191A23] text-white' : 'bg-gray-100 text-gray-900'}`}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -179,7 +181,7 @@ const EmailService = () => {
                 />
                 <button
                   onClick={sendEmail}
-                  className="bg-green-500 self-center hover:bg-green-400 active:bg-green-600 p-[8px] text-black text-lg font-bold w-[25vw] rounded-md"
+                  className="bg-green-500 self-center hover:bg-green-600 active:bg-green-700 p-[8px] text-black text-lg font-bold w-[25vw] rounded-md"
                 >
                   Send Email
                 </button>

@@ -9,23 +9,43 @@ from langchain_core.prompts import ChatPromptTemplate
 from google.cloud import texttospeech_v1beta1 as texttospeech
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import ChatOpenAI
-from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, powerpoint_embed_documets, excel_embed_documents, csv_embed_documents, text_embed_documents
 from langchain_core.output_parsers import StrOutputParser
+from app.services.chromadab import vector_store
 from operator import itemgetter
+import pygame
 
 load_dotenv()
 
+
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/simontesfatsion/Desktop/google_credentials.json"
 
+# Initialize pygame mixer for audio playback
+pygame.mixer.init()
+sound = None  # Global variable to store the loaded audio
 
 llm = ChatOpenAI()
+
+class Content(BaseModel):
+    content: str = Field(
+        ...,
+        description="The line a persona speaks in the conversation."
+    )
+    speaker: str = Field(
+        ...,
+        description="A single letter label, either 'R' for Rachel or 'S' for Simon, to distinguish each persona."
+    )
+
+
+class google_parser(BaseModel):
+    result: List[Content] = Field(
+        description=" list of conversations between personas")
+
+
 
 
 # class question_format(BaseModel):
 #     question1: str
 #     question2: str
-
-
 # @app.get("/")
 # def main():
 #     return ("hello bot from fast")
@@ -46,7 +66,6 @@ llm = ChatOpenAI()
 #                       "content": "Precisely. It's the bridge between your content and your listeners."},
 #                   {"role": "user", "content": f"what is the difference between {user_question.question1} and {user_question.question2}"}],
 #     )
-
 #     result = response.choices[0].message.content
 #     speech_file_path = Path(__file__).parent / "speech.mp3"
 #     response = llm.audio.speech.create(
@@ -54,11 +73,8 @@ llm = ChatOpenAI()
 #         voice="alloy",
 #         input=f"{result}"
 #     )
-
 #     response.stream_to_file(speech_file_path)
 #     return (result)
-
-
 # [speaker="R",content"="we're diving into a fundamental topic for podcasters: RSS feeds. James, can you explain what an RSS feed is and why it's crucial for podcasters?",
 #                   {"role": "assistant", "content": "Absolutely, Lisa. An RSS feed, which stands for Really Simple Syndication, is essentially a web feed that allows users and applications to access updates to websites in a standardized, computer-readable format. For podcasters, it's the backbone of distributing episodes to various platforms."},
 #                   {"role": "user", "content": "So, without an RSS feed, our podcast wouldn't appear on platforms like Apple Podcasts or Spotify?"},
@@ -66,8 +82,6 @@ llm = ChatOpenAI()
 #                   {"role": "user", "content": "Got it. So, ensuring our RSS feed is correctly set up and maintained is essential for reaching our audience."},
 #                   {"role": "assistant",
 #                       "content": "Precisely. It's the bridge between your content and your listeners."},]
-
-
 #  [
 #     {
 #         "content": "Hey, Sara, did you know the difference between cats and dogs?",
@@ -100,21 +114,6 @@ llm = ChatOpenAI()
 # ]
 
 
-# Define a nested model for the content
-class Content(BaseModel):
-    content: str = Field(
-        ...,
-        description="The line a persona speaks in the conversation."
-    )
-    speaker: str = Field(
-        ...,
-        description="A single letter label, either 'R' for Rachel or 'S' for Simon, to distinguish each persona."
-    )
-
-
-class google_parser(BaseModel):
-    result: List[Content] = Field(
-        description=" list of conversations between personas")
 
 
 def rag_endpoint(question):
@@ -132,13 +131,12 @@ def rag_endpoint(question):
         main_chain = {"context": itemgetter("question") | retriver,
                       "question": itemgetter("question")} | main_prompt | llm
 
-        answer = main_chain.invoke(
-            {"question": question})
+        answer = main_chain.invoke( {"question": question})
 
         ai_message = answer.content
         return ai_message
-    except:
-        return f"OpenAI API Limit!"
+    except Exception as e:
+        return e
     #     return f"Error communicating with OpenAI API: {e}"
         # ['choices'][0]['message']['content'].strip()
         # ai_message = answer
@@ -165,19 +163,30 @@ def google_adui(user_question):
     user_question = rag_endpoint(user_question)
     print(user_question)
 
-    # prompt = ChatPromptTemplate.from_messages([("system", " You are a helpful assistant and an expert in podcast content creation. Your task is to answer user questions in a conversational manner by creating a script featuring two personas, Rachel and Simon, who discuss the topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
-    #                                           ("user", "{user_question}")])
-    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script.\n{format_instruction}"),
+    
+    # if podcast is not working anytime try modifying the below promt don't touch the code.
+    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script. follow the format instructions given below to structure the response \n{format_instruction}"),
                                               ("user", "{user_question}")])
+
 
     # return web_loaders(user_question.question1)
     response = prompt | llm | llm_parser
 
-    resutls = response.invoke(
-        {"format_instruction": format_instruction, "user_question": user_question})
+    try:
+        results = response.invoke(
+            {"format_instruction": format_instruction, "user_question": user_question})
+        print(results)
+    except Exception as e:
+        print(f"Parser error: {e}")
+        # Fallback: try without parser to see raw output
+        response_no_parser = prompt | llm
+        raw_output = response_no_parser.invoke(
+            {"format_instruction": format_instruction, "user_question": user_question})
+        print(f"Raw LLM output: {raw_output.content}")
+        raise
 
-    # print(resutls)
-    # for item in resutls:
+    # print(results)
+    # for item in results:
     #     multi_speaker_markup = texttospeech.MultiSpeakerMarkup(
     #         turns=[
     #             texttospeech.MultiSpeakerMarkup.Turn(
@@ -185,10 +194,10 @@ def google_adui(user_question):
     #                 speaker=item.speaker,
     #             ),]
     #     )
-    print(resutls)
+    print(results.result)
     speech_turns = []
 
-    for i in resutls.result:
+    for i in results.result:
         script = texttospeech.MultiSpeakerMarkup.Turn(
             text=i.content,
             speaker=i.speaker
@@ -224,8 +233,34 @@ def google_adui(user_question):
     )
 
     # The response's audio_content is binary.
-    with open("podAudio.mp3", "wb") as out:
+    global sound
+    audio_file = "podAudio.mp3"
+    with open(audio_file, "wb") as out:
         # Write the response to the output file.
         out.write(response.audio_content)
+    
+    # Load the audio file into pygame
+    try:
+        sound = pygame.mixer.Sound(audio_file)
+    except Exception as e:
+        print(f"Error loading audio: {e}")
+        sound = None
+    
+    return {'message': 'Podcast created!'}
 
-        return ('Podcast created!')
+def audio_player(status):
+    global sound
+    
+    if sound is None:
+        return {"message": "No audio loaded. Please generate a podcast first."}
+    try:
+        if status:
+            # Play the audio
+            sound.play()
+            return {"message": "playing"}
+        else:
+            # Stop the audio
+            sound.stop()
+            return {"message": "stopped"}
+    except Exception as e:
+        return {"message": f"Error: {str(e)}"}

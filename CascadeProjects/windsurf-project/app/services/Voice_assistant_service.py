@@ -13,12 +13,12 @@ from pydub import AudioSegment
 from pydub.playback import play
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-from chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, excel_embed_documents, csv_embed_documents, text_embed_documents
+from app.services.chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, excel_embed_documents, csv_embed_documents, text_embed_documents
 from langchain_core.output_parsers import StrOutputParser
 from operator import itemgetter
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
-from Moderations import anti_promptInjection
+from app.services.Moderations import anti_promptInjection
 
 load_dotenv()
 
@@ -119,7 +119,6 @@ async def rag_endpoint(question, llm):
             system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. give detailed answer.If you don't know the answer,just say you don't know in a respectfull manner.
             Context: {context}
             Answer:"""
-
             main_prompt = ChatPromptTemplate.from_messages(
                 [("system", system_prompt), ("user", "{question}")])
             retriver = vector_store.as_retriever(search_kwargs={"k": 4})

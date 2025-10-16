@@ -60,6 +60,7 @@ Best regards,"""
 # Best,  """}
 
 
+
 async def create_subject(draft):
     subject_prompt = ChatPromptTemplate.from_messages([
         ("system", "You are expert in email subject writing. your job is to create a potential subject for an email based on the draft provided for San Francisco Bay University employees . do not include the word subject in the beginning of the subject field "),

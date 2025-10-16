@@ -1,23 +1,22 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_mail import ConnectionConfig
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import os
-import numpy as np
 import whisper
 import openai
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import warnings
-from typing import Dict, Any
 import uvicorn
-from Classification import service_classification
 from app.api.v1.endpoints.ragendpoint import router as ragendpoint
 from app.core.firebase_config import firebase_config
 from app.api.v1.endpoints.fileupload import router as file_upload_router
 from app.api.v1.endpoints.email_endpoint import router as email_endpoint
 from app.api.v1.endpoints.voice_endpoint import router as voice_endpoint
+from app.api.v1.endpoints.transcribe_audio_endpoint import router as transcribe_audio_endpoint
+from app.api.v1.endpoints.podcast_endpoint import router as podcast_endpoint
 # --- Suppress Warnings ---
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -25,13 +24,6 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 # --- Pydantic Models for Request/Response Validation ---
 
-
-class EmailDraftRequest(BaseModel):
-    comment: str
-    language: str
-
-class ClassifyRequest(BaseModel):
-    text: str
 
 def _safe_delattr(obj, name: str):
     if hasattr(obj, name):
@@ -119,44 +111,9 @@ app.include_router(email_endpoint)
 
 app.include_router(voice_endpoint)
 
-# --- API Endpoints ---
+app.include_router(transcribe_audio_endpoint)
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the FastAPI Backend for your AI App"}
-
-@app.post("/transcribe-audio")
-async def transcribe_audio_handler(audio_file: UploadFile = File(...)):
-    """
-    Receives an audio file from the client, transcribes it, and returns the text.
-    The client is responsible for recording the audio.
-    """
-    audio_model = app.state.audio_model
-    if not audio_model:
-        raise HTTPException(status_code=500, detail="Audio model not loaded.")
-
-    try:
-        # Read the audio file content
-        audio_bytes = await audio_file.read()
-        
-        # Convert bytes to a NumPy array that Whisper can process
-        audio_np = np.frombuffer(audio_bytes, np.int16).astype(np.float32) / 32768.0
-
-        # Transcribe
-        result = audio_model.transcribe(audio_np, language='english')
-        transcription = result.get("text", "").strip()
-        
-        return {"transcription": transcription}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing audio file: {e}")
-
-@app.post("/classify")
-async def classify_handler(req: ClassifyRequest):
-    """
-    Classifies the user's text into 'table' or 'general'.
-    """
-    classification = await service_classification(req.text)
-    return {"classification": classification}
+app.include_router(podcast_endpoint)
 
 if __name__ == "__main__":
     # This block is for local debugging and is not used by Uvicorn in production.

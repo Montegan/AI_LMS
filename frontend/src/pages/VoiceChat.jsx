@@ -6,10 +6,12 @@ import { BsChatLeftTextFill } from "react-icons/bs";
 import { MdEmail } from "react-icons/md";
 import { FaPodcast } from "react-icons/fa6";
 import Sidebar from "../components/Sidebar";
+import { useTheme } from "../context/Theme";
 
 function VoiceChat() {
   const [status, setStatus] = useState("");
   const [clicked, setClicked] = useState(false);
+  const { theme } = useTheme();
   const send_mess = async () => {
     setClicked(!clicked);
     console.log(clicked);
@@ -22,11 +24,11 @@ function VoiceChat() {
   const audio_ref = useRef(null);
   const navigate = useNavigate();
   return (
-    <div className="w-full h-[100vh] flex">
+    <div className={`w-full h-[100vh] flex ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
       <Sidebar />
-    <div className="bg-[#000000] relative h-[100vh] w-full flex flex-col p-6 justify-start items-center  ">
+     <div className="relative h-[100vh] w-full flex flex-col p-6 justify-start items-center">
 
-      <h1 className="text-[3rem] font-bold text-[#BC955c] mt-[50px]">
+      <h1 className={`text-[3rem] font-bold mt-[50px] ${theme === "dark" ? "text-[#BC955c]" : "text-gray-900"}`}>
         SFBU VOICE
       </h1>
       <button
@@ -43,7 +45,7 @@ function VoiceChat() {
           onClick={send_mess}
         />
       </button>
-      <span className="mt-[10px] opacity-45 text-slate-50">
+      <span className={`mt-[10px] opacity-45 ${theme === "dark" ? "text-slate-50" : "text-gray-700"}`}>
         CLick Logo to speak
       </span>
       {/* <audio
@@ -54,7 +56,7 @@ function VoiceChat() {
         autoPlay
         ref={audio_ref}
       ></audio> */}
-    </div>
+     </div>
     </div>
   );
 }

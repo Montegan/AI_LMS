@@ -12,4 +12,5 @@ rag_service = RagService()
 
 @router.post("/ragEndpoint")
 async def rag_endpoint_handler(req: RagRequest, llm: ChatOpenAI = Depends(get_llm)):
-   return await rag_service.rag_endpoint_handler(req, llm)
+   req_dict = req.model_dump()
+   return await rag_service.rag_endpoint_handler(req_dict, llm)

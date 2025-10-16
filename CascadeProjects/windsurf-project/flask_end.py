@@ -124,7 +124,7 @@ pygame.mixer.init()
 
 # Function to interact with OpenAI API
 
-
+# done
 @app.route("/ragEndpoint", methods=['POST'])
 def ask_chatgpt():
     data = request.get_json()  # Parse JSON data
@@ -184,7 +184,7 @@ def ask_chatgpt():
     # except requests.exceptions.RequestException as e:
     #     return f"Error communicating with OpenAI API: {e}"
 
-
+# done
 def rag_endpoint(question, currentuser, currentTab, language):
     print(language)
     response = anti_promptInjection(question)
@@ -269,6 +269,7 @@ def rag_endpoint(question, currentuser, currentTab, language):
 #     file_type = mime.from_buffer(file_data)
 #     print(file_type)
 
+# done
 @app.route('/load_db', methods=['POST'])
 def load_document():
     if 'file' not in request.files:
@@ -308,7 +309,7 @@ def load_document():
     else:
         return jsonify({"message": "Unsupported file type!"}), 400
 
-
+# done
 # Flask route to handle web upload
 @app.route('/load_web', methods=['POST'])
 def load_website():
@@ -318,7 +319,7 @@ def load_website():
     message = web_embed_documents(stringlink)
     return jsonify({"message": message})
 
-
+# done
 # Flask route to handle youtube upload
 @app.route('/load_youtube', methods=['POST'])
 def load_youtube():
@@ -397,6 +398,7 @@ def create_email():
 #         return str(e)  # Return the exception message for debugging
 
 
+# done
 @app.route('/sendmail', methods=['POST'])
 def send_email():
     # Get the JSON payload
@@ -472,7 +474,7 @@ def transcribe_audio():
             print(f"Transcription: {predicted_text}")
         return predicted_text
 
-
+# done
 # Flask route to handle audio recording and processing
 @app.route('/process_audio', methods=['POST'])
 def process_audio():

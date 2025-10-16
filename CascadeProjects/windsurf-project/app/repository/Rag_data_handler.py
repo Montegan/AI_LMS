@@ -6,7 +6,7 @@ class RagDataHandler:
     def __init__(self):
         self.db = firebase_config.get_db()
     
-    def save_message(self, message: str, currentuser: str, currentTab: str):
+    async def save_message(self, message: str, currentuser: str, currentTab: str):
         try:
             doc_ref = (
                 self.db.collection("users")

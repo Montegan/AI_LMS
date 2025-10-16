@@ -1,4 +1,4 @@
-from Moderations import anti_promptInjection
+from app.services.Moderations import anti_promptInjection
 from app.services.chromadab import vector_store
 from fastapi import HTTPException
 from operator import itemgetter
@@ -16,7 +16,7 @@ class RagService:
         if not llm:
             raise HTTPException(status_code=500, detail="LLM not initialized")
         # 1. Moderation (using real function)
-        moderation_result = await anti_promptInjection(req.prompt)
+        moderation_result = await anti_promptInjection(req.get("prompt"))
         if moderation_result == "Y":
             ai_message = "Your input contains potentially malicious content and cannot be processed."
         else:
@@ -39,10 +39,10 @@ class RagService:
                 | StrOutputParser()
             )
 
-            ai_message = await rag_chain.ainvoke({"question": req.prompt, "language": req.language})
+            ai_message = await rag_chain.ainvoke({"question": req.get("prompt"), "language": req.get("language")})
             
             # 3. Save to Firebase using service repository architecture.
-            self.rag_data_handler.save_message(ai_message, req.currentuser, req.currentTab)
+            await self.rag_data_handler.save_message(ai_message, req.get("currentuser"), req.get("currentTab"))
         return {"ai_message": ai_message}
 
 rag_service = RagService()
