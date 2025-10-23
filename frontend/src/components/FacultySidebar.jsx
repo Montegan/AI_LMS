@@ -90,7 +90,7 @@ const FacultySidebar = () => {
                         icon={<TbCapture />} 
                         id="TbCapture"
                         label="Ai Attendance" 
-                        onClick={() => {navigate('/student_attendance'); toggleActive('FaUserCheck')}}
+                        onClick={() => {navigate('/faculty_attendance'); toggleActive('FaUserCheck')}}
                     />
 
                     <NavButton 

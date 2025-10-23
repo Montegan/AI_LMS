@@ -25,8 +25,8 @@ import Student from "./pages/Student.jsx";
 import Teacher from "./pages/Faculty.jsx";
 import Protected_routes from './utils/Protected_routes.jsx';
 import Forbiden from "./pages/Forbiden.jsx";
-import StudentAttendance from "./pages/StudentAttendance.jsx";
-import FacultyAttendance from "./pages/FacultyAttendance.jsx";
+import StudentAttendance from "./pages/student/StudentDashboard.jsx";
+import ProfessorDashboard from "./pages/professor/ProfessorDashboard.jsx";
 // --- 4. Main Application Component ---
 export default function App() {
   const { user } = useAuth();
@@ -65,7 +65,7 @@ export default function App() {
     />
      <Route
       path="/faculty_attendance"
-      element={<FacultyAttendance/>}
+      element={<ProfessorDashboard/>}
     />
     <Route path="/student" element={<Student/>} />
     <Route path="/teacher" element={<Teacher/>} />
