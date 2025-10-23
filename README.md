@@ -1,5 +1,25 @@
 # AI-Powered Canvas (AILMS): The AI-native LMS I built end-to-end
 
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232a?logo=react&logoColor=61dafb" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff" alt="Vite" />
+  <img src="https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=fff" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=000" alt="Firebase" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/OpenAI-412991?logo=openai&logoColor=fff" alt="OpenAI" />
+</p>
+
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=react,vite,tailwind,firebase,fastapi,python,js" alt="Tech Icons" />
+</p>
+<p align="center">
+  <img src="https://img.shields.io/github/stars/Montegan/AI_LMS?style=social" alt="GitHub stars" />
+  <img src="https://img.shields.io/github/forks/Montegan/AI_LMS?style=social" alt="GitHub forks" />
+  <img src="https://img.shields.io/github/issues/Montegan/AI_LMS" alt="Open issues" />
+  <img src="https://img.shields.io/github/last-commit/Montegan/AI_LMS" alt="Last commit" />
+  <a href="#"><img src="https://img.shields.io/badge/Live%20Demo-coming_soon-lightgrey" alt="Live Demo" /></a>
+</p>
+
 Hi, I’m Simon. I designed and built an AI-powered Learning Management System (LMS) that modernizes attendance, course workflows, and student–faculty interactions. It blends great UX with secure, real-time data and an AI assistant layer that’s ready for production.
 
 ## Why I built this
@@ -8,11 +28,32 @@ Hi, I’m Simon. I designed and built an AI-powered Learning Management System (
 - I made it production-minded: secure auth, enforceable data rules, and an API layer for AI services.
 
 ## Highlights (quick scan)
-- Role-based dashboards for Students and Professors
-- One-click Google Sign-In with domain restrictions (school emails only)
-- AI-assisted attendance flow (camera/upload → review → confirm)
-- Real-time data model and Firestore security rules
-- Polished, responsive UI with dark/light mode
+- ✨ Role-based dashboards for Students and Professors
+- 🔐 One-click Google Sign-In with domain restrictions (school emails only)
+- 🤖 AI-assisted attendance flow (camera/upload → review → confirm)
+- ⚡ Real-time data model and Firestore security rules
+- 🌓 Polished, responsive UI with dark/light mode
+
+<details>
+<summary><strong>Feature Tour (click to expand)</strong></summary>
+
+- 🧭 Dashboards that adapt to your role (student/professor)
+- 📸 Guided AI attendance flow with review-and-confirm
+- 🔒 Secure sign-in with Google and domain restrictions
+- 🌓 Theme-aware UI (dark/light) and responsive design
+- 🗂️ Ready-to-wire Firestore collections with safe rules
+
+</details>
+
+## Table of Contents
+- [What the app does (plain English)](#what-the-app-does-plain-english)
+- [Tech at a glance (for engineers)](#tech-at-a-glance-for-engineers)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Repo map](#repo-map)
+- [Status and what’s next](#status-and-whats-next)
+- [My role](#my-role)
+- [Technical Overview (Appendix)](#technical-overview-appendix)
 
 ## What the app does (plain English)
 - Professors can take attendance using a guided flow, review suggestions, and confirm results. They can also view history and manage courses.
@@ -23,6 +64,45 @@ Hi, I’m Simon. I designed and built an AI-powered Learning Management System (
 - Frontend: React + Vite + Tailwind CSS v4 + Firebase (Auth + Firestore)
 - Backend: FastAPI + Firebase Admin + AI services scaffold (Whisper/OpenAI)
 - Data safety: Firestore rules enforce domain checks and per-user access
+
+## Quick Start
+
+### Frontend
+- Navigate to `frontend/`
+- Install deps: `npm install`
+- Create `.env.local` with your Firebase config:
+  - `VITE_API_KEY=...`
+  - `VITE_AUTH_DOMAIN=...`
+  - `VITE_PROJECT_ID=...`
+  - `VITE_STORAGE_BUCKET=...`
+  - `VITE_MESSAGING_SENDER_ID=...`
+  - `VITE_APP_ID=...`
+- Run dev server: `npm run dev`
+
+### Backend (FastAPI)
+- Navigate to `CascadeProjects/windsurf-project/`
+- Create and activate a virtual env, then install deps:
+  - macOS/Linux: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
+  - Windows (PowerShell): `py -m venv .venv; .venv\\Scripts\\Activate.ps1; pip install -r requirements.txt`
+- Create `.env` with:
+  - `OPENAI_API_KEY=...`
+  - `GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json`
+- Run API: `uvicorn main:app --reload`
+
+> Tip: Keep Admin credentials server-side only and lock down CORS for deployed environments.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A[User] --> B[Firebase Auth]
+  B --> C[React/Vite Frontend]
+  C --> D[FastAPI Backend]
+  D --> E[AI Services (Whisper/OpenAI)]
+  D --> F[Firebase Admin]
+  F --> G[Firestore]
+  G --> C
+```
 
 ## Repo map
 - Frontend: `ailms/frontend/`
