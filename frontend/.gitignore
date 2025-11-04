@@ -114,3 +114,36 @@ Thumbs.db
 trials.txt
 notes.txt
 todo.txt
+
+# Documentation and guide files (generated)
+DEPLOY_RULES.md
+MATERIALS_UPLOAD_FIX.md
+STUDENT_MATERIALS_GUIDE.md
+STUDENT_PAGES_RESTRUCTURE.md
+STUDENT_NAVIGATION_FLOW.md
+*_GUIDE.md
+*_FIX.md
+
+# Project reports and documentation
+*.pdf
+*.docx
+*.doc
+*.pptx
+*.ppt
+report/
+reports/
+documentation/
+docs/private/
+project-report/
+project-reports/
+*.report.md
+*-report.md
+REPORT.md
+PROJECT_REPORT.md
+
+# Sensitive or private files
+private/
+confidential/
+sensitive/
+*.private.*
+*.confidential.*

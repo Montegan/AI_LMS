@@ -1,5 +1,5 @@
 import { Calendar, Clock, TrendingUp, TrendingDown } from 'lucide-react';
-import { enrolledCourses, attendanceRecords } from '../data/mockData';
+import { attendanceRecords, enrolledCourses } from '../data/mockData';
 import { useTheme } from '../../context/Theme';
 
 export default function AttendanceTracker() {

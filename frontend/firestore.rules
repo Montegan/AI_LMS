@@ -36,5 +36,33 @@ match /users/{userId}/tab_id/{tab_id}/messages/{messageId} {
   allow read, write: if request.auth.uid == userId;
 }
 
+// Rules for enrolled_courses subcollection
+match /users/{userId}/enrolled_courses/{courseId} {
+  // Users can read their own enrolled courses
+  allow read: if request.auth.uid == userId;
+  // Only allow writes from authenticated users (you may want to restrict this further)
+  allow write: if request.auth != null && isAllowedDomain();
+}
+
+// Rules for the 'courses' collection
+match /courses/{courseId} {
+  // Anyone authenticated can read course information
+  allow read: if request.auth != null && isAllowedDomain();
+  // Only authenticated users can create/update courses (you may want to restrict to faculty only)
+  allow write: if request.auth != null && isAllowedDomain();
+}
+
+// Rules for the 'materials' collection
+match /materials/{courseId}/weeks/{materialId} {
+  // Anyone authenticated can read materials
+  allow read: if request.auth != null && isAllowedDomain();
+  // Authenticated users can upload materials (you may want to restrict to faculty only)
+  allow create: if request.auth != null && isAllowedDomain();
+  // Users can update/delete their own uploaded materials
+  allow update, delete: if request.auth != null && 
+                          isAllowedDomain() && 
+                          request.auth.uid == resource.data.uploadedBy;
+}
+
 }
 }

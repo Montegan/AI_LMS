@@ -63,7 +63,7 @@ export default function ProfessorProfile() {
   const { theme } = useTheme();
 
   return (
-    <div className={`space-y-6 ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
+    <div className={`space-y-6 `}>
       {/* Main Profile Card */}
       <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
         <div className={`p-6 text-center ${theme === "dark" ? "border-gray-700" : "border-gray-200"} border-b`}>

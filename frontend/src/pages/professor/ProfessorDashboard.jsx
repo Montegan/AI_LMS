@@ -43,7 +43,7 @@ export default function ProfessorDashboard() {
   return (
     <div className="flex h-[100vh] w-[100vw]">
       <FacultySidebar/>
-      <div className={`rounded-lg shadow-lg ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+      <div className={`w-full shadow-lg  ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"} overflow-scroll`}>
         <div className={`p-6 ${theme === "dark" ? "border-gray-700" : "border-gray-200"} border-b`}>
           <h2 className={`text-2xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
             <UserCheck className="w-6 h-6" />
@@ -55,7 +55,7 @@ export default function ProfessorDashboard() {
             <div className={`grid w-full grid-cols-5 gap-2 p-1 rounded-lg ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}>
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                className={`flex items-center justify-center gap-2 px-4 py-2 transition-colors ${
                   activeTab === 'profile'
                     ? theme === "dark" ? 'bg-gray-600 shadow-sm text-white' : 'bg-white shadow-sm text-gray-900'
                     : theme === "dark" ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900'

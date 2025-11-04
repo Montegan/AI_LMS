@@ -3,6 +3,7 @@ import { app, auth, db, provider } from "../firebase_config";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import Loading from '../components/Loading';
+import Toast from '../components/Toast';
 // --- 2. Authentication Context ---
 const AuthContext = createContext(null);
 
@@ -13,6 +14,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Will hold user profile data from Firestore
   const [loading, setLoading] = useState(true); // To show a loading state during auth check
+  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     // This listener runs on component mount and whenever auth state changes
@@ -22,6 +24,7 @@ export const AuthProvider = ({ children }) => {
         const userDocRef = doc(db, "users", firebaseUser.uid);
         const docSnap = await getDoc(userDocRef);
         console.log(docSnap.data());
+        
         if (docSnap.exists()) {
           // User profile exists, set it in our state
           setUser(docSnap.data());
@@ -30,6 +33,15 @@ export const AuthProvider = ({ children }) => {
           // This could happen if the setDoc call failed after sign-in.
           // We log them out to force a retry.
           console.log("User authenticated but no Firestore profile. Logging out.");
+          
+          // Check if user has valid SFBU email
+          const email = firebaseUser.email;
+          if (email.endsWith('@student.sfbu.edu') || email.endsWith('@sfbu.edu')) {
+            setToastMessage("We've finished setting up your profile. Please sign in again to continue.");
+          } else {
+            setToastMessage("Sign-in failed. Please use a valid SFBU school account (@sfbu.edu or @student.sfbu.edu).");
+          }
+          
           await signOut(auth);
           setUser(null);
         }
@@ -78,8 +90,7 @@ export const AuthProvider = ({ children }) => {
           // The security rules are the real enforcement.
           console.error("Invalid email domain detected on client.");
           await signOut(auth); // Sign the user out
-          // --- FIX: Update the alert message to be specific ---
-          alert("Sign-in failed. Please use a valid SFBU school account (@sfbu.edu or @student.sfbu.edu).");
+          setToastMessage("Sign-in failed. Please use a valid SFBU school account (@sfbu.edu or @student.sfbu.edu).");
           return; // Stop the function here
         }
 
@@ -97,8 +108,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Google Sign-In Error:", error);
       // This will catch general sign-in errors AND permission errors from Firestore rules.
-      // --- FIX: Update the alert message to be specific ---
-      alert("Sign-in failed. Please use a valid SFBU school account (@sfbu.edu or @student.sfbu.edu).");
+      setToastMessage("Sign-in failed. Please use a valid SFBU school account (@sfbu.edu or @student.sfbu.edu).");
     }
   };
 
@@ -121,5 +131,15 @@ export const AuthProvider = ({ children }) => {
     );
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+    </AuthContext.Provider>
+  );
 };

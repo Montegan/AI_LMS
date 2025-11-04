@@ -15,7 +15,7 @@ import { RiRobot2Fill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom"; 
 import { useActiveContext } from "../context/active_nav_context";
 import { TbCapture } from "react-icons/tb";
-
+import { MdRecordVoiceOver } from "react-icons/md";
 
 
 const FacultySidebar = () => {
@@ -80,6 +80,12 @@ const FacultySidebar = () => {
                         label="Email" 
                         onClick={() => {navigate('/EmailService'); toggleActive('FaEnvelope')}}
                     />
+                    <NavButton 
+                        icon={<MdRecordVoiceOver />} 
+                        label="Voice" 
+                        id="MdRecordVoiceOver"
+                        onClick={() => {navigate('/VoiceChat'); toggleActive('MdRecordVoiceOver')}}
+                    />
                     <NavButton
                         icon={<FaPodcast />} 
                         id="FaPodcast"
@@ -90,18 +96,10 @@ const FacultySidebar = () => {
                         icon={<TbCapture />} 
                         id="TbCapture"
                         label="Ai Attendance" 
-                        onClick={() => {navigate('/faculty_attendance'); toggleActive('FaUserCheck')}}
-                    />
-
-                    <NavButton 
-                        icon={<FaUserCheck />} 
-                        id="FaUserCheck"
-                        label="Manual Attendance" 
-                        onClick={() => {navigate('/student_attendance'); toggleActive('FaUserCheck')}}
+                        onClick={() => {navigate('/faculty_attendance'); toggleActive('TbCapture')}}
                     />
                 </nav>
             </div>
-            
             {/* User Section */}
             <div className={`border-t p-2 ${
                 theme === 'dark' 

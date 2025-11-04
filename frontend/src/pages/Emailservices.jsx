@@ -7,6 +7,8 @@ import { BsChatLeftTextFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useTheme } from "../context/Theme";
+import { useAuth } from "../context/auth_context";
+import FacultySidebar from "../components/FacultySidebar";
 const EmailService = () => {
   const [originalComment, setOriginalComment] = useState("");
   const [commentSummary, setCommentSummary] = useState("");
@@ -18,7 +20,9 @@ const EmailService = () => {
   const [reciverAddress, setreciverAddress] = useState("");
   const [attachement, setAttachment] = useState("");
 
+
   const { theme } = useTheme();
+  const { user } = useAuth();
 
   const generateComment = async () => {
     const response = await axios.get(" http://127.0.0.1:5000/originalComment");
@@ -68,7 +72,7 @@ const EmailService = () => {
 
   return (
     <div className={`${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900 text-white' : 'bg-white text-gray-900'} flex items-center h-[100vh] gap-6 w-full`}>
-    <Sidebar/>
+    {user.role === "faculty" ? <FacultySidebar/> : <Sidebar/> }
       <div className="grid max-sm:grid-cols-1  grid-cols-12 w-full gap-2 h-fit">
         <div className="h-fit min-h-[82vh]  pt-2 col-span-5 flex items-center flex-col ">
           <div className=" h-full min-h-[80vh] justify-end  w-full flex gap-2 flex-col">

@@ -25,7 +25,8 @@ import Student from "./pages/Student.jsx";
 import Teacher from "./pages/Faculty.jsx";
 import Protected_routes from './utils/Protected_routes.jsx';
 import Forbiden from "./pages/Forbiden.jsx";
-import StudentAttendance from "./pages/student/StudentDashboard.jsx";
+import StudentProfilePage from "./pages/student/StudentProfilePage.jsx";
+import StudentCoursesPage from "./pages/student/StudentCoursesPage.jsx";
 import ProfessorDashboard from "./pages/professor/ProfessorDashboard.jsx";
 // --- 4. Main Application Component ---
 export default function App() {
@@ -61,13 +62,13 @@ export default function App() {
 
     <Route
       path="/student_attendance"
-      element={<StudentAttendance/>}
+      element={<StudentProfilePage/>}
     />
      <Route
       path="/faculty_attendance"
       element={<ProfessorDashboard/>}
     />
-    <Route path="/student" element={<Student/>} />
+    <Route path="/student" element={<StudentCoursesPage/>} />
     <Route path="/teacher" element={<Teacher/>} />
       </Route>
 

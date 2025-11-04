@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calendar, Search, Edit3, Filter, Download, Save, X } from 'lucide-react';
+import { useTheme } from '../../context/Theme';
 
 const mockAttendanceHistory = [
   {
@@ -103,6 +104,7 @@ const courses = [
 ];
 
 export default function AttendanceHistory() {
+  const { theme } = useTheme();
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [editingRecord, setEditingRecord] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -169,9 +171,9 @@ export default function AttendanceHistory() {
   return (
     <div className="space-y-6">
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
-          <h3 className="text-xl font-bold flex items-center gap-2">
+      <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+          <h3 className={`text-xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
             <Filter className="w-5 h-5" />
             Filters & Search
           </h3>
@@ -179,25 +181,25 @@ export default function AttendanceHistory() {
         <div className="p-6">
           <div className="grid gap-4 md:grid-cols-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2">Search</label>
+              <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Search</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`} />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by course, code, or date..."
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === "dark" ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" : "bg-white border-gray-300 text-gray-900"}`}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Course</label>
+              <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Course</label>
               <select
                 value={courseFilter}
                 onChange={(e) => setCourseFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === "dark" ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"}`}
               >
                 <option value="all">All Courses</option>
                 {courses.map(course => (
@@ -209,11 +211,11 @@ export default function AttendanceHistory() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Method</label>
+              <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Method</label>
               <select
                 value={methodFilter}
                 onChange={(e) => setMethodFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === "dark" ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"}`}
               >
                 <option value="all">All Methods</option>
                 <option value="AI">AI Recognition</option>
@@ -225,10 +227,10 @@ export default function AttendanceHistory() {
       </div>
 
       {/* Attendance Records Table */}
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
+      <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold">Attendance Records</h3>
+            <h3 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Attendance Records</h3>
             <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
               <Download className="w-4 h-4" />
               Export
@@ -239,32 +241,34 @@ export default function AttendanceHistory() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Date</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Course</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Method</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700">Present</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700">Absent</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700">Late</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700">Rate</th>
-                  <th className="text-right py-3 px-4 font-medium text-gray-700">Actions</th>
+                <tr className={`border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                  <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Date</th>
+                  <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Course</th>
+                  <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Method</th>
+                  <th className={`text-center py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Present</th>
+                  <th className={`text-center py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Absent</th>
+                  <th className={`text-center py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Late</th>
+                  <th className={`text-center py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Rate</th>
+                  <th className={`text-right py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRecords.map(record => {
                   const attendanceRate = ((record.presentCount / record.totalStudents) * 100).toFixed(1);
                   return (
-                    <tr key={record.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">{formatDate(record.date)}</td>
+                    <tr key={record.id} className={`border-b ${theme === "dark" ? "border-gray-700 hover:bg-gray-700" : "border-gray-200 hover:bg-gray-50"}`}>
+                      <td className={`py-3 px-4 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{formatDate(record.date)}</td>
                       <td className="py-3 px-4">
                         <div>
-                          <p className="font-medium">{record.courseName}</p>
-                          <p className="text-sm text-gray-500">{record.courseCode}</p>
+                          <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{record.courseName}</p>
+                          <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>{record.courseCode}</p>
                         </div>
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          record.method === 'AI' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                          record.method === 'AI' 
+                            ? theme === "dark" ? 'bg-purple-950 text-purple-300' : 'bg-purple-100 text-purple-800'
+                            : theme === "dark" ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {record.method}
                         </span>
@@ -278,7 +282,7 @@ export default function AttendanceHistory() {
                       <td className="py-3 px-4 text-center">
                         <span className="font-medium text-yellow-600">{record.lateCount}</span>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className={`py-3 px-4 text-center ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
                         <span className="font-medium">{attendanceRate}%</span>
                       </td>
                       <td className="py-3 px-4 text-right space-x-2">
@@ -287,7 +291,7 @@ export default function AttendanceHistory() {
                             setSelectedRecord(record);
                             setIsViewDialogOpen(true);
                           }}
-                          className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                          className={`px-3 py-1 text-sm border rounded-md ${theme === "dark" ? "border-gray-600 hover:bg-gray-700 text-white" : "border-gray-300 hover:bg-gray-50 text-gray-900"}`}
                         >
                           View
                         </button>
@@ -308,7 +312,7 @@ export default function AttendanceHistory() {
             </table>
           </div>
           {filteredRecords.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className={`text-center py-8 ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
               <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No attendance records found.</p>
             </div>
@@ -319,13 +323,13 @@ export default function AttendanceHistory() {
       {/* View Details Modal */}
       {isViewDialogOpen && selectedRecord && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white">
+          <div className={`rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+            <div className={`p-6 border-b sticky top-0 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold">Attendance Details</h3>
+                <h3 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Attendance Details</h3>
                 <button
                   onClick={() => setIsViewDialogOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className={`p-2 rounded-full ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -334,51 +338,51 @@ export default function AttendanceHistory() {
             <div className="p-6 space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-sm text-gray-500">Course</p>
-                  <p className="font-medium">{selectedRecord.courseName}</p>
-                  <p className="text-sm text-gray-500">{selectedRecord.courseCode}</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Course</p>
+                  <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{selectedRecord.courseName}</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>{selectedRecord.courseCode}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Date</p>
-                  <p className="font-medium">{formatDate(selectedRecord.date)}</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Date</p>
+                  <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{formatDate(selectedRecord.date)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Method</p>
-                  <p className="font-medium">{selectedRecord.method}</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Method</p>
+                  <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{selectedRecord.method}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Attendance Rate</p>
-                  <p className="font-medium">{((selectedRecord.presentCount / selectedRecord.totalStudents) * 100).toFixed(1)}%</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Attendance Rate</p>
+                  <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{((selectedRecord.presentCount / selectedRecord.totalStudents) * 100).toFixed(1)}%</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-bold mb-4">Student Details</h4>
+                <h4 className={`font-bold mb-4 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Student Details</h4>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-3 font-medium text-gray-700">Student</th>
-                        <th className="text-left py-2 px-3 font-medium text-gray-700">Status</th>
-                        <th className="text-left py-2 px-3 font-medium text-gray-700">Time</th>
+                      <tr className={`border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                        <th className={`text-left py-2 px-3 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Student</th>
+                        <th className={`text-left py-2 px-3 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Status</th>
+                        <th className={`text-left py-2 px-3 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Time</th>
                         {selectedRecord.method === 'AI' && (
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Confidence</th>
+                          <th className={`text-left py-2 px-3 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Confidence</th>
                         )}
                       </tr>
                     </thead>
                     <tbody>
                       {selectedRecord.students.map(student => (
-                        <tr key={student.id} className="border-b">
+                        <tr key={student.id} className={`border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
                           <td className="py-2 px-3">
                             <div>
-                              <p className="font-medium">{student.name}</p>
-                              <p className="text-sm text-gray-500">{student.id}</p>
+                              <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{student.name}</p>
+                              <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>{student.id}</p>
                             </div>
                           </td>
                           <td className="py-2 px-3">{getStatusBadge(student.status)}</td>
-                          <td className="py-2 px-3">{student.timestamp || '-'}</td>
+                          <td className={`py-2 px-3 ${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}>{student.timestamp || '-'}</td>
                           {selectedRecord.method === 'AI' && (
-                            <td className="py-2 px-3">
+                            <td className={`py-2 px-3 ${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}>
                               {student.confidence ? `${student.confidence}%` : '-'}
                             </td>
                           )}
@@ -396,30 +400,30 @@ export default function AttendanceHistory() {
       {/* Edit Modal */}
       {isEditDialogOpen && editingRecord && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b sticky top-0 bg-white">
-              <h3 className="text-xl font-bold">Edit Attendance</h3>
+          <div className={`rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
+            <div className={`p-6 border-b sticky top-0 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+              <h3 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Edit Attendance</h3>
             </div>
             <div className="p-6 space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <p className="text-sm text-gray-500">Course</p>
-                  <p className="font-medium">{editingRecord.courseName}</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Course</p>
+                  <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{editingRecord.courseName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Date</p>
-                  <p className="font-medium">{formatDate(editingRecord.date)}</p>
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Date</p>
+                  <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{formatDate(editingRecord.date)}</p>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-bold mb-4">Update Student Status</h4>
+                <h4 className={`font-bold mb-4 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Update Student Status</h4>
                 <div className="space-y-3">
                   {editingRecord.students.map(student => (
-                    <div key={student.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div key={student.id} className={`flex items-center justify-between p-3 border rounded-lg ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
                       <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-sm text-gray-500">{student.id}</p>
+                        <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{student.name}</p>
+                        <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>{student.id}</p>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -427,7 +431,7 @@ export default function AttendanceHistory() {
                           className={`px-3 py-1 text-sm rounded-md ${
                             student.status === 'present'
                               ? 'bg-green-600 text-white'
-                              : 'border border-gray-300 hover:bg-gray-50'
+                              : theme === "dark" ? 'border border-gray-600 hover:bg-gray-700 text-white' : 'border border-gray-300 hover:bg-gray-50 text-gray-900'
                           }`}
                         >
                           Present
@@ -437,7 +441,7 @@ export default function AttendanceHistory() {
                           className={`px-3 py-1 text-sm rounded-md ${
                             student.status === 'absent'
                               ? 'bg-red-600 text-white'
-                              : 'border border-gray-300 hover:bg-gray-50'
+                              : theme === "dark" ? 'border border-gray-600 hover:bg-gray-700 text-white' : 'border border-gray-300 hover:bg-gray-50 text-gray-900'
                           }`}
                         >
                           Absent
@@ -447,7 +451,7 @@ export default function AttendanceHistory() {
                           className={`px-3 py-1 text-sm rounded-md ${
                             student.status === 'late'
                               ? 'bg-yellow-600 text-white'
-                              : 'border border-gray-300 hover:bg-gray-50'
+                              : theme === "dark" ? 'border border-gray-600 hover:bg-gray-700 text-white' : 'border border-gray-300 hover:bg-gray-50 text-gray-900'
                           }`}
                         >
                           Late
@@ -458,13 +462,13 @@ export default function AttendanceHistory() {
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end pt-4 border-t">
+              <div className={`flex gap-2 justify-end pt-4 border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
                 <button
                   onClick={() => {
                     setIsEditDialogOpen(false);
                     setEditingRecord(null);
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
+                  className={`px-4 py-2 border rounded-md flex items-center gap-2 ${theme === "dark" ? "border-gray-600 hover:bg-gray-700 text-white" : "border-gray-300 hover:bg-gray-50 text-gray-900"}`}
                 >
                   <X className="w-4 h-4" />
                   Cancel

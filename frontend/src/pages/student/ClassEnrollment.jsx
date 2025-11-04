@@ -1,15 +1,49 @@
-import { useState } from 'react';
-import { Plus, Minus, Clock, User, BookOpen, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Minus, Clock, User, BookOpen, Calendar, Eye } from 'lucide-react';
 import { enrolledCourses as initialEnrolled, availableCourses as initialAvailable } from '../data/mockData';
 import { useTheme } from '../../context/Theme';
+import { useAuth } from '../../context/auth_context';
+import { db } from '../../firebase_config';
+import { collection, query, limit, onSnapshot, getDoc, doc } from 'firebase/firestore';
+import StudentCourseMaterials from './StudentCourseMaterials';
 
 export default function ClassEnrollment() {
-  const [enrolled, setEnrolled] = useState(initialEnrolled);
-  const [available, setAvailable] = useState(
-    initialAvailable.filter(course => !initialEnrolled.some(e => e.id === course.id))
-  );
+  const [enrolled, setEnrolled] = useState([]);
+  const [available, setAvailable] = useState([]);
   const [activeTab, setActiveTab] = useState('enrolled');
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const { theme } = useTheme();
+  const { user } = useAuth();
+
+  // Fetch enrolled courses from Firestore
+  useEffect(() => {
+    if (!user) return;
+
+    const enrolledRef = collection(db, 'users', user.uid, 'enrolled_courses');
+    const enrolledQuery = query(enrolledRef, limit(50));
+    
+    const unsubscribe = onSnapshot(enrolledQuery, async (snapshot) => {
+      const coursePromises = snapshot.docs.map(async (docSnap) => {
+        const courseRef = doc(db, 'courses', docSnap.id);
+        try {
+          const courseSnapshot = await getDoc(courseRef);
+          if (courseSnapshot.exists()) {
+            return { id: courseSnapshot.id, ...courseSnapshot.data() };
+          }
+          return null;
+        } catch (error) {
+          console.error(`Error fetching course ${docSnap.id}:`, error);
+          return null;
+        }
+      });
+
+      const coursesData = await Promise.all(coursePromises);
+      const validCourses = coursesData.filter(course => course !== null);
+      setEnrolled(validCourses);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const handleEnroll = (course) => {
     const newEnrollment = {
@@ -39,7 +73,12 @@ export default function ClassEnrollment() {
     });
   };
 
-  const totalCredits = enrolled.reduce((sum, course) => sum + course.credits, 0);
+  const totalCredits = enrolled.reduce((sum, course) => sum + (course.credits || 0), 0);
+
+  // If a course is selected, show the materials view
+  if (selectedCourse) {
+    return <StudentCourseMaterials course={selectedCourse} onBack={() => setSelectedCourse(null)} />;
+  }
 
   return (
     <div className={`space-y-6 ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
@@ -147,13 +186,15 @@ export default function ClassEnrollment() {
                         </td>
                         <td className={`py-3 px-4 ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}>{formatDate(course.enrollmentDate)}</td>
                         <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => handleDrop(course.id)}
-                            className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm flex items-center gap-1 ml-auto"
-                          >
-                            <Minus className="w-4 h-4" />
-                            Drop
-                          </button>
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => setSelectedCourse(course)}
+                              className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center gap-1"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View Materials
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

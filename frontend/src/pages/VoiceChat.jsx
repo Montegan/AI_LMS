@@ -7,11 +7,13 @@ import { MdEmail } from "react-icons/md";
 import { FaPodcast } from "react-icons/fa6";
 import Sidebar from "../components/Sidebar";
 import { useTheme } from "../context/Theme";
-
+import { useAuth } from "../context/auth_context";
+import FacultySidebar from "../components/FacultySidebar";
 function VoiceChat() {
   const [status, setStatus] = useState("");
   const [clicked, setClicked] = useState(false);
   const { theme } = useTheme();
+  const { user } = useAuth();
   const send_mess = async () => {
     setClicked(!clicked);
     console.log(clicked);
@@ -25,7 +27,7 @@ function VoiceChat() {
   const navigate = useNavigate();
   return (
     <div className={`w-full h-[100vh] flex ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
-      <Sidebar />
+      {user.role === "faculty" ? <FacultySidebar/> : <Sidebar/> }
      <div className="relative h-[100vh] w-full flex flex-col p-6 justify-start items-center">
 
       <h1 className={`text-[3rem] font-bold mt-[50px] ${theme === "dark" ? "text-[#BC955c]" : "text-gray-900"}`}>

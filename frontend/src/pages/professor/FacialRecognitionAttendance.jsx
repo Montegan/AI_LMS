@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Camera, Upload, Scan, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { mockStudents } from '../data/mockData';
+import { useTheme } from '../../context/Theme';
 
 const mockDetectedFaces = [
   {
@@ -36,6 +37,7 @@ const mockDetectedFaces = [
 ];
 
 export default function FacialRecognitionAttendance() {
+  const { theme } = useTheme();
   const [stage, setStage] = useState('initial');
   const [progress, setProgress] = useState(0);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -194,38 +196,38 @@ export default function FacialRecognitionAttendance() {
   if (stage === 'initial') {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow border">
-          <div className="p-6 border-b">
-            <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
+        <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+          <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+            <h3 className={`text-xl font-bold flex items-center gap-2 mb-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
               <Scan className="w-6 h-6" />
               AI-Powered Attendance
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
               Take a class photo or upload an image to automatically detect student attendance
             </p>
           </div>
           <div className="p-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Camera Capture</h3>
+                <h3 className={`text-lg font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Camera Capture</h3>
                 
                 {cameraError && (
-                  <div className="border border-red-200 bg-red-50 rounded-lg">
+                  <div className={`border rounded-lg ${theme === "dark" ? "border-red-900 bg-red-950" : "border-red-200 bg-red-50"}`}>
                     <div className="p-4">
                       <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <AlertCircle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${theme === "dark" ? "text-red-400" : "text-red-600"}`} />
                         <div>
-                          <p className="text-sm font-medium text-red-800">Camera Access Error</p>
-                          <p className="text-sm text-red-700 mt-1">{cameraError}</p>
+                          <p className={`text-sm font-medium ${theme === "dark" ? "text-red-300" : "text-red-800"}`}>Camera Access Error</p>
+                          <p className={`text-sm mt-1 ${theme === "dark" ? "text-red-400" : "text-red-700"}`}>{cameraError}</p>
                           {cameraError.includes('permission') && (
-                            <div className="mt-2 text-xs text-red-600">
+                            <div className={`mt-2 text-xs ${theme === "dark" ? "text-red-400" : "text-red-600"}`}>
                               <p>• Click the camera icon in your browser's address bar</p>
                               <p>• Select "Allow" for camera permissions</p>
                               <p>• Refresh the page and try again</p>
                             </div>
                           )}
                           {cameraError.includes('HTTPS') && (
-                            <p className="text-xs text-red-600 mt-2">
+                            <p className={`text-xs mt-2 ${theme === "dark" ? "text-red-400" : "text-red-600"}`}>
                               Camera access requires a secure connection (HTTPS) in most browsers.
                             </p>
                           )}
@@ -246,7 +248,7 @@ export default function FacialRecognitionAttendance() {
                       {cameraSupported ? 'Start Camera' : 'Camera Not Supported'}
                     </button>
                     {!cameraSupported && (
-                      <p className="text-xs text-gray-600 text-center">
+                      <p className={`text-xs text-center ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                         Please use a modern browser with camera support or upload a photo instead.
                       </p>
                     )}
@@ -257,7 +259,7 @@ export default function FacialRecognitionAttendance() {
                       ref={videoRef} 
                       autoPlay 
                       playsInline 
-                      className="w-full rounded-lg border"
+                      className={`w-full rounded-lg border ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
                     />
                     <div className="flex gap-2">
                       <button 
@@ -269,7 +271,7 @@ export default function FacialRecognitionAttendance() {
                       </button>
                       <button 
                         onClick={stopCamera}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center"
+                        className={`px-4 py-2 border rounded-lg flex items-center justify-center ${theme === "dark" ? "border-gray-600 hover:bg-gray-700" : "border-gray-300 hover:bg-gray-50"}`}
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -279,14 +281,14 @@ export default function FacialRecognitionAttendance() {
               </div>
               
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Upload Photo</h3>
+                <h3 className={`text-lg font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Upload Photo</h3>
                 <div 
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${theme === "dark" ? "border-gray-600 hover:border-gray-500" : "border-gray-300 hover:border-gray-400"}`}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-sm text-gray-600">Click to upload class photo</p>
-                  <p className="text-xs text-gray-400 mt-2">Supports JPG, PNG, WEBP</p>
+                  <Upload className={`w-12 h-12 mx-auto mb-4 ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`} />
+                  <p className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>Click to upload class photo</p>
+                  <p className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`}>Supports JPG, PNG, WEBP</p>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -296,19 +298,19 @@ export default function FacialRecognitionAttendance() {
                   className="hidden"
                 />
                 
-                <div className="border-t pt-4">
-                  <p className="text-sm font-medium text-center mb-2">Try Demo</p>
+                <div className={`border-t pt-4 ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                  <p className={`text-sm font-medium text-center mb-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Try Demo</p>
                   <button
                     onClick={() => {
                       setCapturedImage('https://images.unsplash.com/photo-1660351174962-e2a1fbb9af09?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjbGFzcyUyMHBob3RvJTIwc3R1ZGVudHMlMjBkZW1vfGVufDF8fHx8MTc1ODQ5MDMwMXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral');
                       startProcessing();
                     }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2"
+                    className={`w-full px-4 py-2 border rounded-lg flex items-center justify-center gap-2 ${theme === "dark" ? "border-gray-600 hover:bg-gray-700" : "border-gray-300 hover:bg-gray-50"}`}
                   >
                     <Scan className="w-4 h-4" />
                     Use Demo Class Photo
                   </button>
-                  <p className="text-xs text-gray-600 text-center mt-1">
+                  <p className={`text-xs text-center mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                     Test the AI attendance system with a sample image
                   </p>
                 </div>
@@ -324,9 +326,9 @@ export default function FacialRecognitionAttendance() {
 
   if (stage === 'uploading' || stage === 'processing') {
     return (
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
-          <h3 className="text-xl font-bold flex items-center gap-2">
+      <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+          <h3 className={`text-xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
             <Scan className="w-6 h-6 animate-spin" />
             {stage === 'uploading' ? 'Uploading Image...' : 'Processing with AI...'}
           </h3>
@@ -337,19 +339,19 @@ export default function FacialRecognitionAttendance() {
               <img 
                 src={capturedImage} 
                 alt="Captured class" 
-                className="max-h-64 rounded-lg border"
+                className={`max-h-64 rounded-lg border ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
               />
             </div>
           )}
           
           <div className="space-y-2">
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className={`w-full rounded-full h-3 ${theme === "dark" ? "bg-gray-700" : "bg-gray-200"}`}>
               <div 
                 className="bg-blue-600 h-3 rounded-full transition-all"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
-            <div className="text-sm text-gray-600 text-center">
+            <div className={`text-sm text-center ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
               {stage === 'uploading' && 'Uploading image...'}
               {stage === 'processing' && progress < 40 && 'Detecting faces...'}
               {stage === 'processing' && progress >= 40 && progress < 80 && 'Running facial recognition...'}
@@ -364,10 +366,10 @@ export default function FacialRecognitionAttendance() {
   if (stage === 'reviewing') {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow border">
-          <div className="p-6 border-b">
+        <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+          <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold flex items-center gap-2">
+              <h3 className={`text-xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
                 <CheckCircle className="w-6 h-6 text-green-600" />
                 Detection Results
               </h3>
@@ -380,7 +382,7 @@ export default function FacialRecognitionAttendance() {
                 </button>
                 <button 
                   onClick={reset}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className={`px-4 py-2 border rounded-lg ${theme === "dark" ? "border-gray-600 hover:bg-gray-700 text-white" : "border-gray-300 hover:bg-gray-50 text-gray-900"}`}
                 >
                   Start Over
                 </button>
@@ -394,7 +396,7 @@ export default function FacialRecognitionAttendance() {
                   <img 
                     src={capturedImage} 
                     alt="Class with detected faces" 
-                    className="max-h-80 rounded-lg border"
+                    className={`max-h-80 rounded-lg border ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
                   />
                   {detectedFaces.map(face => (
                     <div
@@ -422,23 +424,23 @@ export default function FacialRecognitionAttendance() {
             )}
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="bg-white rounded-lg shadow border">
-                <div className="p-4 border-b">
-                  <h4 className="text-lg font-bold text-green-700">
+              <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                  <h4 className={`text-lg font-bold ${theme === "dark" ? "text-green-400" : "text-green-700"}`}>
                     ✓ Recognized Students ({recognizedStudents.length})
                   </h4>
                 </div>
                 <div className="p-4">
                   <div className="space-y-2">
                     {recognizedStudents.map(face => (
-                      <div key={face.id} className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                      <div key={face.id} className={`flex items-center justify-between p-2 rounded-lg ${theme === "dark" ? "bg-green-950" : "bg-green-50"}`}>
                         <div>
-                          <p className="font-medium">{face.matchedStudent?.name}</p>
-                          <p className="text-sm text-gray-600">
+                          <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{face.matchedStudent?.name}</p>
+                          <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                             Confidence: {(face.confidence * 100).toFixed(1)}%
                           </p>
                         </div>
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${theme === "dark" ? "bg-green-900 text-green-300" : "bg-green-100 text-green-800"}`}>
                           Present
                         </span>
                       </div>
@@ -447,19 +449,19 @@ export default function FacialRecognitionAttendance() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow border">
-                <div className="p-4 border-b">
-                  <h4 className="text-lg font-bold text-red-700">
+              <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                  <h4 className={`text-lg font-bold ${theme === "dark" ? "text-red-400" : "text-red-700"}`}>
                     ⚠ Unknown Faces ({unknownFaces.length})
                   </h4>
                 </div>
                 <div className="p-4">
                   <div className="space-y-4">
                     {unknownFaces.map(face => (
-                      <div key={face.id} className="p-3 border border-red-200 rounded-lg bg-red-50">
+                      <div key={face.id} className={`p-3 border rounded-lg ${theme === "dark" ? "border-red-900 bg-red-950" : "border-red-200 bg-red-50"}`}>
                         <div className="flex items-center justify-between mb-2">
-                          <p className="font-medium text-red-800">Unknown Face</p>
-                          <p className="text-sm text-red-600">
+                          <p className={`font-medium ${theme === "dark" ? "text-red-300" : "text-red-800"}`}>Unknown Face</p>
+                          <p className={`text-sm ${theme === "dark" ? "text-red-400" : "text-red-600"}`}>
                             {(face.confidence * 100).toFixed(1)}% confidence
                           </p>
                         </div>
@@ -467,7 +469,7 @@ export default function FacialRecognitionAttendance() {
                         <div className="space-y-2">
                           <select
                             onChange={(e) => assignStudentToFace(face.id, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${theme === "dark" ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"}`}
                             defaultValue=""
                           >
                             <option value="" disabled>Select student...</option>
@@ -482,7 +484,7 @@ export default function FacialRecognitionAttendance() {
                           
                           <button 
                             onClick={() => discardFace(face.id)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm flex items-center justify-center gap-2"
+                            className={`w-full px-3 py-2 border rounded-md text-sm flex items-center justify-center gap-2 ${theme === "dark" ? "border-gray-600 hover:bg-gray-700" : "border-gray-300 hover:bg-gray-50"}`}
                           >
                             <X className="w-4 h-4" />
                             Discard Face
@@ -502,48 +504,48 @@ export default function FacialRecognitionAttendance() {
 
   if (stage === 'completed') {
     return (
-      <div className="bg-white rounded-lg shadow border">
-        <div className="p-6 border-b">
-          <h3 className="text-xl font-bold flex items-center gap-2 text-green-700">
+      <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+          <h3 className={`text-xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-green-400" : "text-green-700"}`}>
             <CheckCircle className="w-6 h-6" />
             Attendance Completed
           </h3>
         </div>
         <div className="p-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-3 text-center">
-            <div className="p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
+            <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-green-950" : "bg-green-50"}`}>
+              <div className={`text-2xl font-bold ${theme === "dark" ? "text-green-400" : "text-green-600"}`}>
                 {recognizedStudents.length}
               </div>
-              <div className="text-sm text-green-800">Students Present</div>
+              <div className={`text-sm ${theme === "dark" ? "text-green-300" : "text-green-800"}`}>Students Present</div>
             </div>
-            <div className="p-4 bg-red-50 rounded-lg">
-              <div className="text-2xl font-bold text-red-600">
+            <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-red-950" : "bg-red-50"}`}>
+              <div className={`text-2xl font-bold ${theme === "dark" ? "text-red-400" : "text-red-600"}`}>
                 {mockStudents.length - recognizedStudents.length}
               </div>
-              <div className="text-sm text-red-800">Students Absent</div>
+              <div className={`text-sm ${theme === "dark" ? "text-red-300" : "text-red-800"}`}>Students Absent</div>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className={`p-4 rounded-lg ${theme === "dark" ? "bg-blue-950" : "bg-blue-50"}`}>
+              <div className={`text-2xl font-bold ${theme === "dark" ? "text-blue-400" : "text-blue-600"}`}>
                 {((recognizedStudents.length / mockStudents.length) * 100).toFixed(1)}%
               </div>
-              <div className="text-sm text-blue-800">Attendance Rate</div>
+              <div className={`text-sm ${theme === "dark" ? "text-blue-300" : "text-blue-800"}`}>Attendance Rate</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow border">
-            <div className="p-6 border-b">
-              <h4 className="text-xl font-bold">Final Attendance Report</h4>
+          <div className={`rounded-lg shadow border ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+            <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+              <h4 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Final Attendance Report</h4>
             </div>
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Student ID</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Name</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Confidence</th>
+                    <tr className={`border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+                      <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Student ID</th>
+                      <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Name</th>
+                      <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Status</th>
+                      <th className={`text-left py-3 px-4 font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Confidence</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -552,21 +554,21 @@ export default function FacialRecognitionAttendance() {
                         face => face.matchedStudent?.id === student.id
                       );
                       return (
-                        <tr key={student.id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4 font-medium">{student.id}</td>
-                          <td className="py-3 px-4">{student.name}</td>
+                        <tr key={student.id} className={`border-b ${theme === "dark" ? "border-gray-700 hover:bg-gray-700" : "border-gray-200 hover:bg-gray-50"}`}>
+                          <td className={`py-3 px-4 font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{student.id}</td>
+                          <td className={`py-3 px-4 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>{student.name}</td>
                           <td className="py-3 px-4">
                             {recognizedFace ? (
-                              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${theme === "dark" ? "bg-green-900 text-green-300" : "bg-green-100 text-green-800"}`}>
                                 Present
                               </span>
                             ) : (
-                              <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${theme === "dark" ? "bg-red-900 text-red-300" : "bg-red-100 text-red-800"}`}>
                                 Absent
                               </span>
                             )}
                           </td>
-                          <td className="py-3 px-4">
+                          <td className={`py-3 px-4 ${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}>
                             {recognizedFace 
                               ? `${(recognizedFace.confidence * 100).toFixed(1)}%`
                               : '-'

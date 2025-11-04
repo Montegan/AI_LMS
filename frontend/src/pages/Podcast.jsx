@@ -6,6 +6,8 @@ import { RiUserVoiceFill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useTheme } from "../context/Theme";
+import { useAuth } from "../context/auth_context";
+import FacultySidebar from "../components/FacultySidebar";
 const Podcast = () => {
   const navigate = useNavigate();
   const [user_question, setUserQuestion] = useState("");
@@ -13,7 +15,7 @@ const Podcast = () => {
   const [status, setStatus] = useState(true);
   const [llm_response, setResponse] = useState();
   const { theme } = useTheme();
-
+  const { user } = useAuth();
   
 
   const playAudio = async () => {
@@ -59,7 +61,7 @@ const Podcast = () => {
   return (
     <div className={`flex min-h-screen h-[100vh] w-full text-white ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
       {/* Navigation Icons */}
-      <Sidebar />
+      {user.role === "faculty" ? <FacultySidebar/> : <Sidebar/> }
 
       {/* Main Content */}
       <div className="flex flex-col w-full items-center text-white py-10 space-y-6">

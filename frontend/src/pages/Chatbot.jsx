@@ -21,6 +21,7 @@ import { RiUserVoiceFill } from "react-icons/ri";
 import { MdEmail } from "react-icons/md";
 import { FaPodcast } from "react-icons/fa6";
 import MediaSelector from "../components/chatui_components/MediaSelector";
+import FacultySidebar from "../components/FacultySidebar"
 
 // Message Load Component (replacing shadcn Message_load)
 const MessageLoad = ({ items }) => {
@@ -82,7 +83,7 @@ const ChatInput = ({ currentTab, language }) => {
       }
     );
     console.log("message sent");
-    console.log(backendMessage);
+    console.log(backendMessage.data.ai_message);
     setInputMessage("");
   };
   return (
@@ -116,7 +117,6 @@ const Chatbot = () => {
   const [tab_title, setTabTitle] = useState({ message: "" });
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
-
   const handdle_logout = async () => {
     const signed_out = await signOut(auth);
     console.log(user.proactiveRefresh.isRunning);
@@ -253,7 +253,7 @@ const Chatbot = () => {
 
   return (
     <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900' : 'bg-gray-50'}`}>
-      <Sidebar/>
+      {user.role === "faculty" ? <FacultySidebar/> : <Sidebar/> }
 
       {loading ? (
         <Loading />

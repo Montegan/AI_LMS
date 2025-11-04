@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/auth_context";
 import Sidebar from "../components/Sidebar";
 import { useTheme } from "../context/Theme";
-import StudentDashbaoard from "../components/StudentDashbaoard";
+import StudentDashboard from "../pages/student/StudentDashboard";
 export default function Student() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const { user } = useAuth();
@@ -22,8 +22,7 @@ export default function Student() {
 
   return (
     <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
-        <Sidebar/>
-        <StudentDashbaoard selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse} courses={courses} />
+        <StudentDashboard selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse} courses={courses} />
     </div>
   );
 }
