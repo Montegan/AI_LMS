@@ -56,6 +56,9 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
   
+
+
+  // This is the function that will be called when the user clicks the login button.
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
@@ -121,6 +124,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     loginWithGoogle,
     logout,
+    loading
   };
 
   if (loading) {
