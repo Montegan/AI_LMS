@@ -10,7 +10,7 @@ from google.cloud import texttospeech_v1beta1 as texttospeech
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
-from app.services.chromadab import vector_store
+from app.services.chromadab import get_vector_store
 from operator import itemgetter
 import pygame
 
@@ -125,7 +125,9 @@ def rag_endpoint(question):
 
         main_prompt = ChatPromptTemplate.from_messages(
             [("system", system_prompt), ("user", "{question}")])
-        retriver = vector_store.as_retriever(search_kwargs={"k": 4})
+        # Default to the persistent collection if no course ID is provided
+        course_id = "chroma_db_persistent"
+        retriver = get_vector_store(course_id).as_retriever(search_kwargs={"k": 4})
         string_parser = StrOutputParser()
 
         main_chain = {"context": itemgetter("question") | retriver,

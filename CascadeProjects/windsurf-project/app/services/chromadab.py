@@ -18,13 +18,15 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20
 persist_directory = "chroma_db_persistent"
 
 # Initialize the vector store. It will be created if it doesn't exist.
-vector_store = Chroma(
-    collection_name="chroma_db_persistent",
-    persist_directory=persist_directory,
-    embedding_function=embeddings
-)
+def get_vector_store(course_name):
+    return Chroma(
+        collection_name=course_name,
+        persist_directory=persist_directory,
+        embedding_function=embeddings
+    )
 
-async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: str = None) -> str:
+
+async def embed_and_store_documents(loader_class, loader_arg: Any, courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str,file_path: str = None) -> str:
     """
     Asynchronously loads, splits, and embeds documents into the Chroma vector store.
 
@@ -32,12 +34,18 @@ async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: st
         loader_class: The LangChain document loader class to use.
         loader_arg: The argument for the loader (e.g., a URL or file path).
         file_path: The path to the file to be deleted after processing.
-
+        weekNumber: The week number of the course.
+        fileName: The name of the file.
+        role: The role of the user.
+        uploadedBy: The user who uploaded the file.
+        courseId: The ID of the course.
     Returns:
         A status message.
     """
+    collection_name = courseId
+    vector_store = get_vector_store(collection_name)
 
-    print(loader_arg)
+    print(loader_arg,collection_name)
     try:
         # Initialize the specific loader with its argument
         loader = loader_class(loader_arg)
@@ -47,7 +55,7 @@ async def embed_and_store_documents(loader_class, loader_arg: Any, file_path: st
         docs = text_splitter.split_documents(documents)
         
         # Add the document chunks to the vector store
-        vector_store.add_documents(docs)
+        vector_store.add_documents(docs,metadata={"weekNumber": weekNumber, "fileName": fileName, "role": role, "uploadedBy": uploadedBy, "courseId": courseId})
         
         # # Persist the changes to disk
         # vector_store.persist()
@@ -79,32 +87,32 @@ async def save_upload_file_tmp(upload_file: UploadFile) -> str:
 
 # --- Public API Functions ---
 
-async def pdf_embed_documents(file: UploadFile) -> str:
+async def pdf_embed_documents(file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(PyPDFLoader, file_path, file_path)
+    return await embed_and_store_documents(PyPDFLoader,file_path,courseId,weekNumber,fileName,role,uploadedBy,file_path)
 
-async def web_embed_documents(url: str) -> str:
-    return await embed_and_store_documents(WebBaseLoader, url)
+async def web_embed_documents(url: str,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
+    return await embed_and_store_documents(WebBaseLoader, url,weekNumber,fileName,role,uploadedBy,courseId)
 
-async def youtube_embed_documents(url: str) -> str:
-    return await embed_and_store_documents(YoutubeLoader, url)
+async def youtube_embed_documents(url: str,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
+    return await embed_and_store_documents(YoutubeLoader, url,weekNumber,fileName,role,uploadedBy,courseId)
 
-async def docs_embed_documents(file: UploadFile) -> str:
+async def docs_embed_documents(file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(Docx2txtLoader, file_path, file_path)
+    return await embed_and_store_documents(Docx2txtLoader, file_path, file_path,weekNumber,fileName,role,uploadedBy,courseId)
 
-async def powerpoint_embed_documents(file: UploadFile) -> str:
+async def powerpoint_embed_documents(file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(UnstructuredPowerPointLoader, file_path, file_path)
+    return await embed_and_store_documents(UnstructuredPowerPointLoader, file_path, file_path,weekNumber,fileName,role,uploadedBy,courseId)
 
-async def excel_embed_documents(file: UploadFile) -> str:
+async def excel_embed_documents(file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(UnstructuredExcelLoader, file_path, file_path)
+    return await embed_and_store_documents(UnstructuredExcelLoader, file_path, file_path,weekNumber,fileName,role,uploadedBy,courseId)
 
-async def csv_embed_documents(file: UploadFile) -> str:
+async def csv_embed_documents(file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(CSVLoader, file_path, file_path)
+    return await embed_and_store_documents(CSVLoader, file_path, file_path,weekNumber,fileName,role,uploadedBy,courseId)
 
-async def text_embed_documents(file: UploadFile) -> str:
+async def text_embed_documents(file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> str:
     file_path = await save_upload_file_tmp(file)
-    return await embed_and_store_documents(TextLoader, file_path, file_path)
+    return await embed_and_store_documents(TextLoader, file_path, file_path,weekNumber,fileName,role,uploadedBy,courseId)

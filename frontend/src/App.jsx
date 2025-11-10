@@ -28,7 +28,7 @@ import VoiceChat from "./pages/VoiceChat.jsx";
 import EmailService from "./pages/Emailservices.jsx";
 import Podcast from "./pages/Podcast.jsx";
 import Student from "./pages/Student.jsx";
-import Teacher from "./pages/Faculty.jsx";
+import Faculty from "./pages/Faculty.jsx";
 import Protected_routes from "./utils/Protected_routes.jsx";
 import Forbiden from "./pages/Forbiden.jsx";
 import StudentProfilePage from "./pages/student/StudentProfilePage.jsx";
@@ -54,7 +54,7 @@ export default function App() {
         <Route path="/student_attendance" element={<StudentProfilePage />} />
         <Route path="/faculty_attendance" element={<ProfessorDashboard />} />
         <Route path="/student" element={<StudentCoursesPage />} />
-        <Route path="/teacher" element={<Teacher />} />
+        <Route path="/teacher" element={<Faculty />} />
       </Route>
 
       <Route path="*" element={<Forbiden />} />

@@ -5,10 +5,8 @@ from app.schemas.fileUpload import WebUpload
 router =APIRouter()
 
 @router.post("/load_db")
-async def upload_documents(file: UploadFile = File(...), currentuser: str = Form(...), currentTab: str = Form(...)):
-    currentuser = ""
-    currentTab = ""
-    return await file_upload_service.load_document_handler(file)
+async def upload_documents(file: UploadFile = File(...), courseId: str = Form(...), weekNumber: str = Form(...), fileName: str = Form(...), role: str = Form(...), uploadedBy: str = Form(...)):    
+    return await file_upload_service.load_document_handler(file,courseId,weekNumber,fileName,role,uploadedBy)
 
 @router.post("/load_web")
 async def upload_web(webUrl: WebUpload):

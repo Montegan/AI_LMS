@@ -5,6 +5,7 @@ import { useAuth } from '../../context/auth_context';
 import { db } from '../../firebase_config';
 import { collection, query, limit, onSnapshot, getDoc, doc, getDocs } from 'firebase/firestore';
 import StudentCourseMaterials from './StudentCourseMaterials';
+import { useActiveCourse } from '../../context/active_course';
 
 export default function MyCourses() {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
@@ -13,6 +14,7 @@ export default function MyCourses() {
   const [loading, setLoading] = useState(true);
   const { theme } = useTheme();
   const { user } = useAuth();
+  const { setActiveCourse, activeCourse } = useActiveCourse();
 
   // Fetch enrolled courses from Firestore
   useEffect(() => {
@@ -59,9 +61,13 @@ export default function MyCourses() {
     return () => unsubscribe();
   }, [user]);
 
+  const handleCourseSelect = (course) => {
+    setActiveCourse(course);
+  };
+
   // If a course is selected, show the materials view
-  if (selectedCourse) {
-    return <StudentCourseMaterials course={selectedCourse} onBack={() => setSelectedCourse(null)} />;
+  if (activeCourse) {
+    return <StudentCourseMaterials course={activeCourse} onBack={() => setActiveCourse(null)} />;
   }
 
   const totalCredits = enrolledCourses.reduce((sum, course) => sum + (course.credits || 0), 0);
@@ -142,7 +148,7 @@ export default function MyCourses() {
           {enrolledCourses.map((course) => (
             <div
               key={course.id}
-              onClick={() => setSelectedCourse(course)}
+              onClick={() => handleCourseSelect(course)}
               className={`group rounded-xl border-2 p-6 cursor-pointer transition-all duration-300 ${
                 theme === "dark"
                   ? "bg-gray-800 border-gray-700 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20"

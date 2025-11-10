@@ -8,12 +8,12 @@ import { useTheme } from '../context/Theme';
 const Faculty = () => {
     const { user } = useAuth();
     const { theme } = useTheme();
-    if (!user) {
-        return <Navigate to="/" />
-    }
-    if (user.role !== "faculty") {
-        return <Navigate to="/student" />
-    }
+    // if (!user) {
+    //     return <Navigate to="/" />
+    // }
+    // if (user.role !== "faculty") {
+    //     return <Navigate to="/student" />
+    // }
     
     return (
         <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>

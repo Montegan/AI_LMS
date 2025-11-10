@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { BookOpen, GraduationCap } from 'lucide-react';
 import ClassEnrollment from './ClassEnrollment';
 import MyCourses from './MyCourses';
-import Sidebar from '../../components/Sidebar';
 import { useTheme } from '../../context/Theme';
+import StudentSidebar from '../../components/StudentSidebar';
 
 export default function StudentCoursesPage() {
   const [activeTab, setActiveTab] = useState('courses');
@@ -11,7 +11,7 @@ export default function StudentCoursesPage() {
 
   return (
     <div className="max-w-full w-full h-[100vh] flex">
-      <Sidebar />
+      <StudentSidebar />
       <div className={`h-[100vh] p-6 shadow-lg flex-1 overflow-y-auto ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
         <div className={`p-6 ${theme === "dark" ? "border-gray-700" : "border-gray-200"} border-b mb-6`}>
           <h2 className={`text-2xl font-bold flex items-center gap-2 ${theme === "dark" ? "text-white" : "text-gray-900"}`}>

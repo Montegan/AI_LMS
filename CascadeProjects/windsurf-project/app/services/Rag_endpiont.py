@@ -1,5 +1,5 @@
 from app.services.Moderations import anti_promptInjection
-from app.services.chromadab import vector_store
+from app.services.chromadab import get_vector_store
 from fastapi import HTTPException
 from operator import itemgetter
 from langchain_core.prompts import ChatPromptTemplate
@@ -29,7 +29,9 @@ class RagService:
                 ("user", "{question}")
             ])
 
-            retriever = vector_store.as_retriever(search_kwargs={"k": 4})
+            # Use the course ID from the request or default to the persistent collection
+            course_id = req.get("courseId", "chroma_db_persistent")
+            retriever = get_vector_store(course_id).as_retriever(search_kwargs={"k": 4})
 
             # Simplified chain for clarity
             rag_chain = (
@@ -42,7 +44,13 @@ class RagService:
             ai_message = await rag_chain.ainvoke({"question": req.get("prompt"), "language": req.get("language")})
             
             # 3. Save to Firebase using service repository architecture.
-            await self.rag_data_handler.save_message(ai_message, req.get("currentuser"), req.get("currentTab"))
+            # Use courseId if provided in the request
+            await self.rag_data_handler.save_message(
+                message=ai_message, 
+                currentuser=req.get("currentuser"), 
+                currentTab=req.get("currentTab"),
+                courseId=req.get("courseId")
+            )
         return {"ai_message": ai_message}
 
 rag_service = RagService()

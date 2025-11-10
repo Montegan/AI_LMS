@@ -4,7 +4,7 @@ import StudentProfile from './StudentProfile';
 import AttendanceTracker from './AttendanceTracker';
 import ClassEnrollment from './ClassEnrollment';
 import MyCourses from './MyCourses';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../../components/SidebarEmpty';
 import { useTheme } from '../../context/Theme';
 
 export default function StudentDashboard() {

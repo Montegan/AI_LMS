@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { BsChatLeftTextFill } from "react-icons/bs";
 import { MdEmail } from "react-icons/md";
 import { FaPodcast } from "react-icons/fa6";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/SidebarEmpty";
+import StudentSidebar from "../components/StudentSidebar";
 import { useTheme } from "../context/Theme";
 import { useAuth } from "../context/auth_context";
 import FacultySidebar from "../components/FacultySidebar";
@@ -27,7 +28,7 @@ function VoiceChat() {
   const navigate = useNavigate();
   return (
     <div className={`w-full h-[100vh] flex ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
-      {user.role === "faculty" ? <FacultySidebar/> : <Sidebar/> }
+      {user.role === "faculty" ? <FacultySidebar/> : <StudentSidebar/> }
      <div className="relative h-[100vh] w-full flex flex-col p-6 justify-start items-center">
 
       <h1 className={`text-[3rem] font-bold mt-[50px] ${theme === "dark" ? "text-[#BC955c]" : "text-gray-900"}`}>

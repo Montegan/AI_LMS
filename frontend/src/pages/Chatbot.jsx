@@ -1,5 +1,5 @@
 import React from 'react'
-import Sidebar from '../components/Sidebar'
+import Sidebar from '../components/SidebarEmpty'
 import { useTheme } from '../context/Theme'
 import { useAuth } from '../context/auth_context';
 import Loading from "../components/Loading";
@@ -22,6 +22,9 @@ import { MdEmail } from "react-icons/md";
 import { FaPodcast } from "react-icons/fa6";
 import MediaSelector from "../components/chatui_components/MediaSelector";
 import FacultySidebar from "../components/FacultySidebar"
+import StudentSidebar from "../components/StudentSidebar"
+import { useActiveCourse } from "../context/active_course";
+
 
 // Message Load Component (replacing shadcn Message_load)
 const MessageLoad = ({ items }) => {
@@ -50,30 +53,44 @@ const ChatInput = ({ currentTab, language }) => {
   const [inputMessage, setInputMessage] = useState("");
   const { user } = useAuth();
   const { theme } = useTheme();
+  const { activeCourse } = useActiveCourse();
   const [userInput, setUserInput] = useState("");
+  
   const handleSubmit = async (e) => {
+    if (!inputMessage.trim()) return;
+    
     const currentuser = auth.currentUser.uid;
-    // const send_ref = collection(db, currentuser);
+    // Get the current course ID from context, or use a default
+    const courseId = activeCourse?.id || "default_course";
+    
+    // Use the new database structure
     const send_ref = collection(
       db,
-      "users",
+      "chat",
       currentuser,
-      "tab_id",
+      "course",
+      courseId,
+      "tabs",
       currentTab,
       "messages"
     );
+    
+    // Add the message to the new path
     await addDoc(send_ref, {
       userId: currentuser,
+      courseId: courseId,
       human_message: inputMessage,
       created_at: serverTimestamp(),
     });
 
+    // Send to backend with course ID
     const backendMessage = await axios.post(
       "http://127.0.0.1:5000/ragEndpoint",
       {
         prompt: inputMessage,
         currentuser: currentuser,
         currentTab: currentTab,
+        courseId: courseId,  // Add courseId to the request
         language: language,
       },
       {
@@ -82,7 +99,7 @@ const ChatInput = ({ currentTab, language }) => {
         },
       }
     );
-    console.log("message sent");
+    console.log("Message sent to course:", courseId);
     console.log(backendMessage.data.ai_message);
     setInputMessage("");
   };
@@ -105,7 +122,7 @@ const ChatInput = ({ currentTab, language }) => {
     </div>
   );
 };
-const Chatbot = () => {
+const Chatbot = ({ courseId, role }) => {
   const { theme } = useTheme();
   const { user, loading, error } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -117,13 +134,14 @@ const Chatbot = () => {
   const [tab_title, setTabTitle] = useState({ message: "" });
   const navigate = useNavigate();
   const chatEndRef = useRef(null);
+  const { activeCourse } = useActiveCourse();
   const handdle_logout = async () => {
     const signed_out = await signOut(auth);
     console.log(user.proactiveRefresh.isRunning);
     console.log(signed_out);
     navigate("/");
   };
-
+  console.log(activeCourse);
   // Navigate to /ChatBot if the user is logged in
   useEffect(() => {
     if (user == null) {
@@ -135,89 +153,177 @@ const Chatbot = () => {
   useEffect(() => {
     if (user) {
       const current_user = user.uid;
-      const collection_tab = collection(db, "owner", current_user, "tabs");
+      // Get the current course ID from context, or use a default
+      const courseId = activeCourse?.id || "default_course";
+      
+      // First, check if we have tabs in the new structure
+      const collection_tab = collection(db, "chat", current_user, "course", courseId, "tabs");
       const tabs_query = query(
         collection_tab,
         orderBy("created_at", "desc"),
         limit(50)
       );
+      
       const unsubscribeTabs = onSnapshot(tabs_query, (snapshot) => {
-        setTabs(snapshot.docs.map((mac) => mac.id));
-        snapshot.docs.map((mac) => {
-          const message_fetch = collection(
-            db,
-            "users",
-            current_user,
-            "tab_id",
-            mac.id,
-            "messages"
-          );
-          const message_query = query(
-            message_fetch,
-            orderBy("created_at"),
+        // If no tabs in new structure, fall back to old structure
+        if (snapshot.empty) {
+          console.log("No tabs found in new structure, using legacy path");
+          const legacy_collection_tab = collection(db, "owner", current_user, "tabs");
+          const legacy_tabs_query = query(
+            legacy_collection_tab,
+            orderBy("created_at", "desc"),
             limit(50)
           );
-          onSnapshot(message_query, (snapshot) => {
-            setMessages(snapshot.docs.map((doc) => doc.data()));
-            var names = snapshot.docs.map((doc) => doc.data());
-            console.log("thus is the value of names");
-            console.log(names);
-            snapshot.docs.map((docs) =>
-              setTabTitle((prev) => ({
-                ...prev,
-                [mac.id]: names[0].human_message,
-              }))
-            );
+          
+          onSnapshot(legacy_tabs_query, (legacySnapshot) => {
+            setTabs(legacySnapshot.docs.map((mac) => mac.id));
+            legacySnapshot.docs.map((mac) => {
+              const message_fetch = collection(
+                db,
+                "users",
+                current_user,
+                "tab_id",
+                mac.id,
+                "messages"
+              );
+              const message_query = query(
+                message_fetch,
+                orderBy("created_at"),
+                limit(50)
+              );
+              onSnapshot(message_query, (msgSnapshot) => {
+                const messages = msgSnapshot.docs.map((doc) => doc.data());
+                setMessages(messages);
+                
+                if (messages.length > 0) {
+                  setTabTitle((prev) => ({
+                    ...prev,
+                    [mac.id]: messages[0].human_message,
+                  }));
+                }
+              });
+            });
           });
-        });
-        console.log("I was able to load");
-        console.log(snapshot.docs.map((doc) => doc.id));
+        } else {
+          // Use new structure
+          setTabs(snapshot.docs.map((mac) => mac.id));
+          snapshot.docs.forEach((mac) => {
+            const message_fetch = collection(
+              db,
+              "chat",
+              current_user,
+              "course",
+              courseId,
+              "tabs",
+              mac.id,
+              "messages"
+            );
+            const message_query = query(
+              message_fetch,
+              orderBy("created_at"),
+              limit(50)
+            );
+            onSnapshot(message_query, (msgSnapshot) => {
+              const messages = msgSnapshot.docs.map((doc) => doc.data());
+              setMessages(messages);
+              
+              if (messages.length > 0) {
+                setTabTitle((prev) => ({
+                  ...prev,
+                  [mac.id]: messages[0].human_message,
+                }));
+              }
+            });
+          });
+        }
+        console.log("Tabs loaded successfully");
       });
-      console.log(currentTab);
-      console.log(user);
+      
+      console.log("Current tab:", currentTab);
+      console.log("Current user:", user);
+      
       return () => {
         unsubscribeTabs();
       };
     }
-  }, []);
+  }, [user, activeCourse]);
   const handleTabCreate = async (e) => {
     const current_user = user.uid;
-    const collection_ref = collection(db, "owner", current_user, "tabs");
+    // Get the current course ID from context, or use a default
+    const courseId = activeCourse?.id || "default_course";
+    
+    // Create tab in the new structure
+    const collection_ref = collection(db, "chat", current_user, "course", courseId, "tabs");
     const q = await addDoc(collection_ref, {
       user_id: current_user,
+      course_id: courseId,
       created_at: serverTimestamp(),
     });
+    
     setCurrentTab(q.id);
+    
+    // Refresh tabs list
     const tabs_query = query(
       collection_ref,
       orderBy("created_at", "desc"),
       limit(50)
     );
+    
     onSnapshot(tabs_query, (snapshot) => {
       setTabs(snapshot.docs.map((doc) => doc.id));
-      console.log(snapshot.docs.map((doc) => doc.id));
+      console.log("New tabs:", snapshot.docs.map((doc) => doc.id));
     });
 
     handeActiveTab(q.id);
-    console.log(q.id);
+    console.log("Created new tab with ID:", q.id);
   };
 
   const handeActiveTab = (active_id) => {
     const current_user = user.uid;
     const active_tab = active_id;
-    const send_ref = collection(
+    // Get the current course ID from context, or use a default
+    const courseId = activeCourse?.id || "default_course";
+    
+    // Try to fetch messages from the new structure first
+    const new_send_ref = collection(
       db,
-      "users",
+      "chat",
       current_user,
-      "tab_id",
+      "course",
+      courseId,
+      "tabs",
       active_tab,
       "messages"
     );
-    const tabs_query = query(send_ref, orderBy("created_at"), limit(50));
-    onSnapshot(tabs_query, (snapshot) => {
-      setMessages(snapshot.docs.map((doc) => doc.data()));
-      console.log(snapshot.docs.map((doc) => doc.id));
+    
+    const new_message_query = query(new_send_ref, orderBy("created_at"), limit(50));
+    
+    // First try the new structure
+    onSnapshot(new_message_query, (snapshot) => {
+      if (snapshot.empty) {
+        // If no messages in new structure, fall back to old structure
+        console.log("No messages found in new structure, using legacy path");
+        const legacy_send_ref = collection(
+          db,
+          "users",
+          current_user,
+          "tab_id",
+          active_tab,
+          "messages"
+        );
+        
+        const legacy_message_query = query(legacy_send_ref, orderBy("created_at"), limit(50));
+        
+        onSnapshot(legacy_message_query, (legacySnapshot) => {
+          setMessages(legacySnapshot.docs.map((doc) => doc.data()));
+        });
+      } else {
+        // Use messages from new structure
+        setMessages(snapshot.docs.map((doc) => doc.data()));
+      }
     });
+    
+    setCurrentTab(active_id);
   };
 
   const handleAttach = () => {
@@ -253,7 +359,7 @@ const Chatbot = () => {
 
   return (
     <div className={`w-full h-[100vh] flex ${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900' : 'bg-gray-50'}`}>
-      {user.role === "faculty" ? <FacultySidebar/> : <Sidebar/> }
+      {user.role === "faculty" ? <FacultySidebar/> : <StudentSidebar/> }
 
       {loading ? (
         <Loading />
@@ -462,8 +568,6 @@ const Chatbot = () => {
                   <MediaSelector
                     setMediaSelector={setMediaSelector}
                     mediaSelector={mediaSelector}
-                    currentuser={user.uid}
-                    currentTab={currentTab}
                   />
                   <div ref={chatEndRef}></div>
                 </div>

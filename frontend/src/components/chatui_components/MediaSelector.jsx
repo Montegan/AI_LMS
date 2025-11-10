@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { CgWebsite } from "react-icons/cg";
 import { FaYoutube } from "react-icons/fa";
+import { useActiveCourse } from "../../context/active_course";
+import { useAuth } from "../../context/auth_context";
 
-const MediaSelector = ({ mediaSelector, setMediaSelector, currentuser, currentTab }) => {
+const MediaSelector = ({ mediaSelector, setMediaSelector}) => {
   const [file, setfile] = useState("");
   const [UploadStatus, setUploadStatus] = useState("");
   const [webUrl, setWebUrl] = useState("");
   const [youtubeUrl, setyoutubeUrl] = useState("");
+  const { activeCourse } = useActiveCourse();
+  const { user } = useAuth();
 
   // Handle file upload
   const handleFileUpload = async () => {
@@ -18,8 +22,11 @@ const MediaSelector = ({ mediaSelector, setMediaSelector, currentuser, currentTa
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("currentuser", currentuser);
-    formData.append("currentTab", currentTab);
+    formData.append("uploadedBy", user.uid);
+    formData.append("courseId", activeCourse.id);
+    formData.append("weekNumber", "1"); // Default to week 1 or you could add a week selector
+    formData.append("fileName", file.name);
+    formData.append("role", user.role || "student"); // Add user role or default to student
 
     try {
       const response = await axios.post(

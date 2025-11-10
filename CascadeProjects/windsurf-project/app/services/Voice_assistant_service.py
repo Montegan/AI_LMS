@@ -13,7 +13,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-from app.services.chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, vector_store, docs_embed_documents, excel_embed_documents, csv_embed_documents, text_embed_documents
+from app.services.chromadab import pdf_embed_documents, web_embed_documents, youtube_embed_documents, get_vector_store, docs_embed_documents, excel_embed_documents, csv_embed_documents, text_embed_documents
 from langchain_core.output_parsers import StrOutputParser
 from operator import itemgetter
 from langchain_openai import ChatOpenAI
@@ -121,7 +121,9 @@ async def rag_endpoint(question, llm):
             Answer:"""
             main_prompt = ChatPromptTemplate.from_messages(
                 [("system", system_prompt), ("user", "{question}")])
-            retriver = vector_store.as_retriever(search_kwargs={"k": 4})
+            # Default to the persistent collection if no course ID is provided
+            course_id = "chroma_db_persistent"
+            retriver = get_vector_store(course_id).as_retriever(search_kwargs={"k": 4})
             string_parser = StrOutputParser()
 
             main_chain = {"context": itemgetter("question") | retriver,

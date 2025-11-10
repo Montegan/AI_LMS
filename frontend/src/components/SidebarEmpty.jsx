@@ -18,7 +18,7 @@ import { useActiveContext } from "../context/active_nav_context";
 
 
 
-const Sidebar = () => {
+const SidebarEmpty = () => {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const { active, toggleActive } = useActiveContext();
@@ -67,36 +67,6 @@ const Sidebar = () => {
                         id="FaBookOpen"
                         label="Course Materials" 
                         onClick={() => {navigate('/Student'); toggleActive('FaBookOpen')}}
-                    />
-                    <NavButton 
-                        icon={<RiRobot2Fill />} 
-                        id="RiRobot2Fill"
-                        label="Chat" 
-                        onClick={() => {navigate('/Chatbot'); toggleActive('RiRobot2Fill')}}
-                    />
-                    <NavButton 
-                        icon={<FaEnvelope />} 
-                        id="FaEnvelope"
-                        label="Email" 
-                        onClick={() => {navigate('/EmailService'); toggleActive('FaEnvelope')}}
-                    />
-                    <NavButton 
-                        icon={<MdRecordVoiceOver />} 
-                        id="MdRecordVoiceOver"
-                        label="Voice" 
-                        onClick={() => {navigate('/VoiceChat'); toggleActive('MdRecordVoiceOver')}}
-                    />
-                    <NavButton 
-                        icon={<FaPodcast />} 
-                        id="FaPodcast"
-                        label="Podcast" 
-                        onClick={() => {navigate('/Podcast'); toggleActive('FaPodcast')}}
-                    />
-                    <NavButton 
-                        icon={<FaUserCheck />} 
-                        id="FaUserCheck"
-                        label="Attendance" 
-                        onClick={() => {navigate('/student_attendance'); toggleActive('FaUserCheck')}}
                     />
                 </nav>
             </div>
@@ -154,4 +124,4 @@ const Sidebar = () => {
     )
 }
 
-export default Sidebar
+export default SidebarEmpty

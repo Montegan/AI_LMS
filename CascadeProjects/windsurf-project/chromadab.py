@@ -26,7 +26,6 @@ vector_store = Chroma(
 async def embed_and_store_documents(loader_class, file_path: str = None) -> str:
     """
     Asynchronously loads, splits, and embeds documents into the Chroma vector store.
-
     Args:
         loader_class: The LangChain document loader class to use.
         loader_arg: The argument for the loader (e.g., a URL or file path).

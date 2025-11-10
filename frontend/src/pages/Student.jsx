@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/auth_context";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/SidebarEmpty";
 import { useTheme } from "../context/Theme";
 import StudentDashboard from "../pages/student/StudentDashboard";
 export default function Student() {

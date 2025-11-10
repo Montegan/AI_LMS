@@ -13,7 +13,7 @@ class FileUploadService:
     def __init__(self):
         pass
 
-    async def load_document_handler(self,file: UploadFile) -> Dict[str, str]:
+    async def load_document_handler(self,file: UploadFile,courseId: str,weekNumber: str,fileName: str,role: str,uploadedBy: str) -> Dict[str, str]:
         """
         Receives a file, detects its type using python-magic, and processes it for RAG.
         """
@@ -32,17 +32,17 @@ class FileUploadService:
 
         # Route the file to the appropriate embedding function based on its detected type
         if 'pdf' in file_type:
-            message = await pdf_embed_documents(file)
+            message = await pdf_embed_documents(file,courseId,weekNumber,fileName,role,uploadedBy)
         elif 'msword' in file_type or 'officedocument.wordprocessingml' in file_type:
-            message = await docs_embed_documents(file)
+            message = await docs_embed_documents(file,courseId,weekNumber,fileName,role,uploadedBy)
         elif 'officedocument.presentationml' in file_type:
-            message = await powerpoint_embed_documents(file)
+            message = await powerpoint_embed_documents(file,courseId,weekNumber,fileName,role,uploadedBy)
         elif 'officedocument.spreadsheetml' in file_type:
-            message = await excel_embed_documents(file)
+            message = await excel_embed_documents(file,courseId,weekNumber,fileName,role,uploadedBy)
         elif 'csv' in file_type:
-            message = await csv_embed_documents(file)
+            message = await csv_embed_documents(file,courseId,weekNumber,fileName,role,uploadedBy)
         elif 'text/plain' in file_type:
-            message = await text_embed_documents(file)
+            message = await text_embed_documents(file,courseId,weekNumber,fileName,role,uploadedBy)
         else:
             raise HTTPException(status_code=400, detail=f"Unsupported file type: '{file_type}' for file '{file.filename}'")
 
