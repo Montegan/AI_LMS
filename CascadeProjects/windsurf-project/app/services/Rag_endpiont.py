@@ -29,8 +29,14 @@ class RagService:
                 ("user", "{question}")
             ])
 
-            # Use the course ID from the request or default to the persistent collection
-            course_id = req.get("courseId", "chroma_db_persistent")
+            # Always use the course ID from the request or default to a consistent value
+            course_id = req.get("courseId")
+            if not course_id:
+                course_id = "default_course"
+                print(f"Warning: No courseId provided in request, using default: {course_id}")
+            else:
+                print(f"Using course ID from request: {course_id}")
+                
             retriever = get_vector_store(course_id).as_retriever(search_kwargs={"k": 4})
 
             # Simplified chain for clarity

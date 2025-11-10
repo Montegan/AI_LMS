@@ -7,7 +7,7 @@ import { collection, query, limit, onSnapshot, getDoc, doc, getDocs } from 'fire
 import StudentCourseMaterials from './StudentCourseMaterials';
 import { useActiveCourse } from '../../context/active_course';
 
-export default function MyCourses() {
+export default function MyCourses({ renderBackButton }) {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseMaterialCounts, setCourseMaterialCounts] = useState({});
@@ -67,6 +67,16 @@ export default function MyCourses() {
 
   // If a course is selected, show the materials view
   if (activeCourse) {
+    // If renderBackButton is provided, use it to render a back button
+    if (renderBackButton) {
+      return (
+        <>
+          {renderBackButton(() => setActiveCourse(null))}
+          <StudentCourseMaterials course={activeCourse} onBack={() => {}} />
+        </>
+      );
+    }
+    // Otherwise use the default behavior
     return <StudentCourseMaterials course={activeCourse} onBack={() => setActiveCourse(null)} />;
   }
 

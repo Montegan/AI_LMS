@@ -9,7 +9,8 @@ import {
   FaUserCheck, 
   FaSignOutAlt, 
   FaSun, 
-  FaMoon 
+  FaMoon,
+  FaGraduationCap 
 } from 'react-icons/fa';
 import { MdRecordVoiceOver } from "react-icons/md";
 import { RiRobot2Fill } from "react-icons/ri";
@@ -104,9 +105,9 @@ const StudentSidebar = () => {
                     />
                      </>
                     ): (<NavButton 
-                            icon={<FaBookOpen />} 
+                            icon={<FaGraduationCap className="text-xl" />} 
                             id="FaBookOpen"
-                            label="Course Materials" 
+                            label="Select Course" 
                             onClick={() => {navigate('/Student'); toggleActive('FaBookOpen')}}
                         />)}
                 </nav>

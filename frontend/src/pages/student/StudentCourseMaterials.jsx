@@ -109,13 +109,7 @@ const StudentCourseMaterials = ({ course, onBack }) => {
     <div className="space-y-6">
       {/* Header with Back Button */}
       <div className={`rounded-xl shadow-lg border p-6 ${theme === "dark" ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700" : "bg-gradient-to-br from-white to-gray-50 border-gray-200"}`}>
-        <button
-          onClick={onBack}
-          className={`flex items-center gap-2 mb-4 px-4 py-2 rounded-lg transition-all ${theme === "dark" ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Courses
-        </button>
+        {/* Back button removed */}
 
         <div className="flex items-start justify-between">
           <div className="flex-1">

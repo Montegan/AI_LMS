@@ -155,8 +155,9 @@ const Chatbot = ({ courseId, role }) => {
       const current_user = user.uid;
       // Get the current course ID from context, or use a default
       const courseId = activeCourse?.id || "default_course";
+      console.log("Using course ID:", courseId);
       
-      // First, check if we have tabs in the new structure
+      // Only use the new structure
       const collection_tab = collection(db, "chat", current_user, "course", courseId, "tabs");
       const tabs_query = query(
         collection_tab,
@@ -165,49 +166,14 @@ const Chatbot = ({ courseId, role }) => {
       );
       
       const unsubscribeTabs = onSnapshot(tabs_query, (snapshot) => {
-        // If no tabs in new structure, fall back to old structure
-        if (snapshot.empty) {
-          console.log("No tabs found in new structure, using legacy path");
-          const legacy_collection_tab = collection(db, "owner", current_user, "tabs");
-          const legacy_tabs_query = query(
-            legacy_collection_tab,
-            orderBy("created_at", "desc"),
-            limit(50)
-          );
+        try {
+          // Set tabs from snapshot
+          const tabIds = snapshot.docs.map((doc) => doc.id);
+          setTabs(tabIds);
+          console.log("Loaded tabs:", tabIds);
           
-          onSnapshot(legacy_tabs_query, (legacySnapshot) => {
-            setTabs(legacySnapshot.docs.map((mac) => mac.id));
-            legacySnapshot.docs.map((mac) => {
-              const message_fetch = collection(
-                db,
-                "users",
-                current_user,
-                "tab_id",
-                mac.id,
-                "messages"
-              );
-              const message_query = query(
-                message_fetch,
-                orderBy("created_at"),
-                limit(50)
-              );
-              onSnapshot(message_query, (msgSnapshot) => {
-                const messages = msgSnapshot.docs.map((doc) => doc.data());
-                setMessages(messages);
-                
-                if (messages.length > 0) {
-                  setTabTitle((prev) => ({
-                    ...prev,
-                    [mac.id]: messages[0].human_message,
-                  }));
-                }
-              });
-            });
-          });
-        } else {
-          // Use new structure
-          setTabs(snapshot.docs.map((mac) => mac.id));
-          snapshot.docs.forEach((mac) => {
+          // For each tab, get its messages
+          snapshot.docs.forEach((tab) => {
             const message_fetch = collection(
               db,
               "chat",
@@ -215,27 +181,37 @@ const Chatbot = ({ courseId, role }) => {
               "course",
               courseId,
               "tabs",
-              mac.id,
+              tab.id,
               "messages"
             );
+            
             const message_query = query(
               message_fetch,
               orderBy("created_at"),
               limit(50)
             );
+            
             onSnapshot(message_query, (msgSnapshot) => {
               const messages = msgSnapshot.docs.map((doc) => doc.data());
               setMessages(messages);
+              console.log(`Loaded ${messages.length} messages for tab ${tab.id}`);
               
-              if (messages.length > 0) {
+              // Set tab title from first message if available
+              if (messages.length > 0 && messages[0].human_message) {
                 setTabTitle((prev) => ({
                   ...prev,
-                  [mac.id]: messages[0].human_message,
+                  [tab.id]: messages[0].human_message,
                 }));
               }
+            }, (error) => {
+              console.error(`Error loading messages for tab ${tab.id}:`, error);
             });
           });
+        } catch (error) {
+          console.error("Error processing tabs:", error);
         }
+      }, (error) => {
+        console.error("Error loading tabs:", error);
         console.log("Tabs loaded successfully");
       });
       
@@ -283,9 +259,10 @@ const Chatbot = ({ courseId, role }) => {
     const active_tab = active_id;
     // Get the current course ID from context, or use a default
     const courseId = activeCourse?.id || "default_course";
+    console.log(`Activating tab ${active_id} for course ${courseId}`);
     
-    // Try to fetch messages from the new structure first
-    const new_send_ref = collection(
+    // Only use the new structure
+    const message_ref = collection(
       db,
       "chat",
       current_user,
@@ -296,32 +273,18 @@ const Chatbot = ({ courseId, role }) => {
       "messages"
     );
     
-    const new_message_query = query(new_send_ref, orderBy("created_at"), limit(50));
+    const message_query = query(message_ref, orderBy("created_at"), limit(50));
     
-    // First try the new structure
-    onSnapshot(new_message_query, (snapshot) => {
-      if (snapshot.empty) {
-        // If no messages in new structure, fall back to old structure
-        console.log("No messages found in new structure, using legacy path");
-        const legacy_send_ref = collection(
-          db,
-          "users",
-          current_user,
-          "tab_id",
-          active_tab,
-          "messages"
-        );
-        
-        const legacy_message_query = query(legacy_send_ref, orderBy("created_at"), limit(50));
-        
-        onSnapshot(legacy_message_query, (legacySnapshot) => {
-          setMessages(legacySnapshot.docs.map((doc) => doc.data()));
-        });
-      } else {
-        // Use messages from new structure
-        setMessages(snapshot.docs.map((doc) => doc.data()));
-      }
+    // Set up listener for messages
+    const unsubscribe = onSnapshot(message_query, (snapshot) => {
+      const messages = snapshot.docs.map((doc) => doc.data());
+      setMessages(messages);
+      console.log(`Loaded ${messages.length} messages for active tab ${active_tab}`);
+    }, (error) => {
+      console.error(`Error loading messages for tab ${active_tab}:`, error);
     });
+    
+    // Store the unsubscribe function somewhere if you need to clean it up later
     
     setCurrentTab(active_id);
   };
@@ -341,9 +304,16 @@ const Chatbot = ({ courseId, role }) => {
   const handleAudio = async () => {
     console.log(Micon);
     const currentuser = user.uid;
+    // Get the current course ID from context, or use a default
+    const courseId = activeCourse?.id || "default_course";
+    
     const backendMessage = await axios.post(
       "http://127.0.0.1:5000/transcribe_audio",
-      { currentuser: currentuser, currentTab: currentTab },
+      { 
+        currentuser: currentuser, 
+        currentTab: currentTab,
+        courseId: courseId  // Add courseId to the request
+      },
       {
         headers: {
           "Content-Type": "application/json",
@@ -354,6 +324,7 @@ const Chatbot = ({ courseId, role }) => {
     backendMessage && setMicon(false);
 
     console.log(backendMessage.data.data);
+    console.log("Audio transcription sent to course:", courseId);
     const recorded_text = backendMessage.data.data;
   };
 
