@@ -11,8 +11,9 @@ class RagService:
     def __init__(self):
         self.rag_data_handler = RagDataHandler()
 
-    async def rag_endpoint_handler(self,req, llm):
+    async def rag_endpoint_handler(self,req,courseId, llm):
         print(req)
+        print(courseId)
         if not llm:
             raise HTTPException(status_code=500, detail="LLM not initialized")
         # 1. Moderation (using real function)
@@ -21,7 +22,7 @@ class RagService:
             ai_message = "Your input contains potentially malicious content and cannot be processed."
         else:
             # 2. RAG Chain Logic
-            system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. Give a detailed answer. If you don't know the answer, just say you don't know in a respectful manner. The answer should be in language: {language}.
+            system_prompt = """You are an assistant for question-answering tasks. Use the following pieces of retrieved context only to answer the question. Give a detailed answer. if no context is provided, just say you don't know in a respectful manner. The answer should be in language: {language}.
             Context: {context}
             Answer:"""  
             prompt_template = ChatPromptTemplate.from_messages([
@@ -30,7 +31,7 @@ class RagService:
             ])
 
             # Always use the course ID from the request or default to a consistent value
-            course_id = req.get("courseId")
+            course_id = courseId
             if not course_id:
                 course_id = "default_course"
                 print(f"Warning: No courseId provided in request, using default: {course_id}")
@@ -55,7 +56,7 @@ class RagService:
                 message=ai_message, 
                 currentuser=req.get("currentuser"), 
                 currentTab=req.get("currentTab"),
-                courseId=req.get("courseId")
+                courseId=course_id
             )
         return {"ai_message": ai_message}
 

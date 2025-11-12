@@ -14,7 +14,7 @@ export default function StudentCoursesPage() {
       <StudentSidebar />
       <div className={`h-[100vh] p-6 shadow-lg flex-1 overflow-y-auto ${theme === "dark" ? "bg-gradient-to-b from-black to-gray-900" : "bg-white"}`}>
         {/* Header removed - Back button is now rendered conditionally */}
-        <MyCourses 
+        <MyCourses
           renderBackButton={(onBack) => (
             <div className={`p-6 ${theme === "dark" ? "border-gray-700" : "border-gray-200"} border-b mb-6`}>
               <button 

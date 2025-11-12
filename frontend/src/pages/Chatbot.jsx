@@ -85,12 +85,11 @@ const ChatInput = ({ currentTab, language }) => {
 
     // Send to backend with course ID
     const backendMessage = await axios.post(
-      "http://127.0.0.1:5000/ragEndpoint",
+      `http://127.0.0.1:5000/ragEndpoint/${courseId}`,
       {
         prompt: inputMessage,
         currentuser: currentuser,
         currentTab: currentTab,
-        courseId: courseId,  // Add courseId to the request
         language: language,
       },
       {

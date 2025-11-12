@@ -10,7 +10,7 @@ router = APIRouter()
 # Initialize RagService instance from services.
 rag_service = RagService()
 
-@router.post("/ragEndpoint")
-async def rag_endpoint_handler(req: RagRequest, llm: ChatOpenAI = Depends(get_llm)):
+@router.post("/ragEndpoint/{courseId}")
+async def rag_endpoint_handler(req: RagRequest, courseId: str, llm: ChatOpenAI = Depends(get_llm)):
    req_dict = req.model_dump()
-   return await rag_service.rag_endpoint_handler(req_dict, llm)
+   return await rag_service.rag_endpoint_handler(req_dict, courseId, llm)
