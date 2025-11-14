@@ -29,18 +29,74 @@ import { useActiveCourse } from "../context/active_course";
 // Message Load Component (replacing shadcn Message_load)
 const MessageLoad = ({ items }) => {
   const { theme } = useTheme();
+  
+  // // Handle temporary processing message
+  // if (items.isTemporary) {
+  //   return (
+  //     <div className="flex flex-col gap-4 p-4">
+  //       <div className="flex justify-end">
+  //         <div className={`p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#91bcd675] text-[#ffffff]' : 'bg-[#929292] text-[#000000]'} animate-pulse`}>
+  //           {items.human_message}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  
+  // // Handle AI thinking message
+  // if (items.isWaiting) {
+  //   return (
+  //     <div className="flex flex-col gap-4 p-4">
+  //       <div className="flex justify-start">
+  //         <div className={`p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#43505568] text-[#ffffff]' : 'bg-[#8a8a8a5a] text-[#222222]'} animate-pulse flex items-center`}>
+  //           <span className="mr-2">{items.human_message}</span>
+  //           <span className="inline-block w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  
+  // // Handle transcription message (user's speech)
+  // if (items.isTranscription) {
+  //   return (
+  //     <div className="flex flex-col gap-4 p-4">
+  //       <div className="flex justify-end">
+  //         <div className={`p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#91bcd675] text-[#ffffff]' : 'bg-[#929292] text-[#000000]'} border-2 ${theme === 'dark' ? 'border-blue-400' : 'border-blue-500'}`}>
+  //           <div className="flex items-center">
+  //             <span className="mr-2 text-xs opacity-70">🎤</span>
+  //             {items.human_message}
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  
+  // Handle system messages (errors, etc)
+  if (items.userId === "system") {
+    return (
+      <div className="flex justify-center px-4 py-2">
+        <div className={`px-4 py-2 rounded-md text-sm ${theme === 'dark' ? 'bg-blue-900/30 text-blue-200 border border-blue-800/50' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+          {items.human_message}
+        </div>
+      </div>
+    );
+  }
+  
+  // Default message handling
   return (
     <div className="flex flex-col gap-4 p-4">
       {items.human_message && (
         <div className="flex justify-end">
-          <div className={` p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#91bcd675] text-[#ffffff]' : 'bg-[#929292] text-[#000000]'}`}>
+          <div className={`p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#91bcd675] text-[#ffffff]' : 'bg-[#929292] text-[#000000]'}`}>
             {items.human_message}
           </div>
         </div>
       )}
       {items.ai_message && (
         <div className="flex justify-start">
-          <div className={` p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#43505568] text-[#ffffff]' : 'bg-[#8a8a8a5a] text-[#222222]'}`}>
+          <div className={`p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#43505568] text-[#ffffff]' : 'bg-[#8a8a8a5a] text-[#222222]'}`}>
             {items.ai_message}
           </div>
         </div>
@@ -161,7 +217,7 @@ const Chatbot = ({ courseId, role }) => {
       const tabs_query = query(
         collection_tab,
         orderBy("created_at", "desc"),
-        limit(50)
+        limit(100)
       );
       
       const unsubscribeTabs = onSnapshot(tabs_query, (snapshot) => {
@@ -187,19 +243,25 @@ const Chatbot = ({ courseId, role }) => {
             const message_query = query(
               message_fetch,
               orderBy("created_at"),
-              limit(50)
+              limit(100)
             );
             
             onSnapshot(message_query, (msgSnapshot) => {
               const messages = msgSnapshot.docs.map((doc) => doc.data());
-              setMessages(messages);
-              console.log(`Loaded ${messages.length} messages for tab ${tab.id}`);
+              // Filter out temporary and placeholder messages, keep only real Firestore messages
+              const realMessages = messages.filter(msg => 
+                !msg.isTemporary && 
+                !msg.isWaiting && 
+                !msg.isTranscription
+              );
+              setMessages(realMessages);
+              console.log(`Loaded ${realMessages.length} messages for tab ${tab.id}`);
               
               // Set tab title from first message if available
-              if (messages.length > 0 && messages[0].human_message) {
+              if (realMessages.length > 0 && realMessages[0].human_message) {
                 setTabTitle((prev) => ({
                   ...prev,
-                  [tab.id]: messages[0].human_message,
+                  [tab.id]: realMessages[0].human_message,
                 }));
               }
             }, (error) => {
@@ -272,13 +334,28 @@ const Chatbot = ({ courseId, role }) => {
       "messages"
     );
     
-    const message_query = query(message_ref, orderBy("created_at"), limit(50));
+    const message_query = query(message_ref, orderBy("created_at"), limit(100));
     
     // Set up listener for messages
     const unsubscribe = onSnapshot(message_query, (snapshot) => {
       const messages = snapshot.docs.map((doc) => doc.data());
-      setMessages(messages);
-      console.log(`Loaded ${messages.length} messages for active tab ${active_tab}`);
+      
+      // Remove any temporary or waiting messages when real messages arrive
+      setMessages(prevMessages => {
+        // Keep only real messages from previous state (not temporary or waiting)
+        const realMessages = prevMessages.filter(msg => 
+          !msg.isTemporary && !msg.isWaiting && !msg.isTranscription
+        );
+        
+        // If we have new messages from Firestore, use those
+        if (messages.length > 0) {
+          console.log(`Loaded ${messages.length} messages for active tab ${active_tab}`);
+          return messages;
+        }
+        
+        // Otherwise keep the real messages we had before
+        return realMessages;
+      });
     }, (error) => {
       console.error(`Error loading messages for tab ${active_tab}:`, error);
     });
@@ -300,31 +377,118 @@ const Chatbot = ({ courseId, role }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleAudio = async () => {
-    console.log(Micon);
+  // Separate functions for starting and stopping recording
+  const startRecording = async () => {
     const currentuser = user.uid;
-    // Get the current course ID from context, or use a default
     const courseId = activeCourse?.id || "default_course";
     
-    const backendMessage = await axios.post(
-      "http://127.0.0.1:5000/transcribe_audio",
-      { 
-        currentuser: currentuser, 
-        currentTab: currentTab,
-        courseId: courseId  // Add courseId to the request
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
+    try {
+      // Start recording
+      await axios.post(
+        `http://127.0.0.1:5000/start_recording/${courseId}`,
+        { 
+          currentuser: currentuser, 
+          currentTab: currentTab,
         },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Recording started");
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      setMicon(false); // Reset mic state on error
+    }
+  };
+
+  const stopRecording = async () => {
+    const currentuser = user.uid;
+    const courseId = activeCourse?.id || "default_course";
+    
+    try {
+      console.log("Stopping recording and waiting for transcription...");
+      
+      // Show only audio processing message
+      const processingMessage = {
+        userId: "system",
+        human_message: "Processing audio...",
+        created_at: new Date(),
+        isTemporary: true
+      };
+      setMicon(false);
+      // Add processing message to UI
+      setMessages(prev => [...prev, processingMessage]);
+      
+      // Stop recording and get transcription
+      const backendMessage = await axios.post(
+        `http://127.0.0.1:5000/stop_recording/${courseId}`,
+        { 
+          currentuser: currentuser, 
+          currentTab: currentTab,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Remove processing message
+      setMessages(prev => prev.filter(msg => !msg.isTemporary));
+
+      // Check if we got a valid response
+      if (backendMessage.data && backendMessage.data.data) {
+        const transcribedText = backendMessage.data.data;
+        console.log("Transcribed text:", transcribedText);
+        
+        // The backend automatically saves the message to Firestore
+        // and generates an AI response, which will be picked up by the
+        // message listener in useEffect - no need for temporary messages
+        
+      } else if (backendMessage.data && backendMessage.data.error) {
+        console.error("Transcription error:", backendMessage.data.error);
+        // Add error message
+        setMessages(prev => [...prev, {
+          userId: "system",
+          human_message: `Error: ${backendMessage.data.error}`,
+          created_at: new Date()
+        }]);
+      } else {
+        console.error("Unexpected response format:", backendMessage.data);
+        setMessages(prev => [...prev, {
+          userId: "system",
+          human_message: "Error: Unexpected response from server",
+          created_at: new Date()
+        }]);
       }
-    );
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      // Remove processing message and show error
+      // Remove temporary message and show error
+      setMessages(prev => prev.filter(msg => !msg.isTemporary));
+      // Add error message
+      setMessages(prev => [...prev, {
+        userId: "system",
+        human_message: `Error: ${error.message || "Failed to process audio"}`,
+        created_at: new Date()
+      }]);
+    } finally {
+      setMicon(false); // Always reset mic state
+    }
+  };
 
-    backendMessage && setMicon(false);
-
-    console.log(backendMessage.data.data);
-    console.log("Audio transcription sent to course:", courseId);
-    const recorded_text = backendMessage.data.data;
+  // Handle mic button click
+  const handleAudio = async () => {
+    if (!Micon) {
+      // Start recording
+      setMicon(true);
+      await startRecording();
+    } else {
+      // Stop recording
+      await stopRecording();
+    }
   };
 
   return (
@@ -554,18 +718,22 @@ const Chatbot = ({ courseId, role }) => {
                       <CgAttachment />
                     </button>
                     <button
-                      onClick={() => {
-                        setMicon(!Micon);
-                        console.log(Micon);
-                        handleAudio();
-                      }}
+                      onClick={handleAudio}
                       className={
                         Micon
-                          ? "text-red-500 flex items-center justify-center text-[1.2rem]  h-10 w-[100px] p-2 rounded-lg"
-                          : `flex items-center justify-center text-[1.2rem] h-10 w-[100px]  p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-gray-50 hover:text-[#1e38a2]':'text-gray-800 hover:text-[#1e38a2]' }`
+                          ? `text-red-500 flex items-center justify-center text-[1.2rem] h-10 w-[100px] p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-red-100'} animate-pulse`
+                          : `flex items-center justify-center text-[1.2rem] h-10 w-[100px] p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-gray-50 hover:text-[#1e38a2]':'text-gray-800 hover:text-[#1e38a2]' }`
                       }
+                      title={Micon ? "Stop recording" : "Start recording"}
                     >
-                      <FaMicrophone />
+                      {Micon ? (
+                        <>
+                          <FaMicrophone className="animate-pulse" />
+                          <span className="ml-1 text-xs">Recording...</span>
+                        </>
+                      ) : (
+                        <FaMicrophone />
+                      )}
                     </button>
                     <ChatInput currentTab={currentTab} language={language} />
                   </div>
