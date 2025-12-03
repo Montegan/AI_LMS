@@ -17,6 +17,11 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20
 # Define a persistent directory for the Chroma vector store
 persist_directory = "chroma_db_persistent"
 
+# Ensure the directory exists with proper permissions
+if not os.path.exists(persist_directory):
+    os.makedirs(persist_directory, mode=0o755, exist_ok=True)
+    print(f"Created ChromaDB directory: {persist_directory}")
+
 # Initialize the vector store. It will be created if it doesn't exist.
 def get_vector_store(course_name):
     return Chroma(
