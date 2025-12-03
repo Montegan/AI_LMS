@@ -29,6 +29,55 @@ import { useActiveCourse } from "../context/active_course";
 // Message Load Component (replacing shadcn Message_load)
 const MessageLoad = ({ items }) => {
   const { theme } = useTheme();
+  const headingClass = (level) => {
+    const lvl = Number(level);
+    if (lvl === 1) return "text-2xl font-bold";
+    if (lvl === 2) return "text-xl font-semibold";
+    return "text-lg font-semibold";
+  };
+  const renderBlock = (block, idx) => {
+    if (!block || !block.type) return null;
+    if (block.type === "heading") {
+      const lvl = Math.min(3, Math.max(1, Number(block.level) || 2));
+      return (
+        <div key={idx} className={`${headingClass(lvl)} ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          {block.text}
+        </div>
+      );
+    }
+    if (block.type === "paragraph") {
+      return (
+        <p key={idx} className={`${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
+          {block.text}
+        </p>
+      );
+    }
+    if (block.type === "bullets") {
+      const items = Array.isArray(block.items) ? block.items : [];
+      return (
+        <ul key={idx} className={`${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} list-disc pl-5`}>
+          {items.map((it, i) => <li key={i}>{it}</li>)}
+        </ul>
+      );
+    }
+    if (block.type === "code") {
+      return (
+        <pre key={idx} className={`${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-900'} rounded-md p-3 overflow-x-auto whitespace-pre-wrap`}>
+          <code>{block.content}</code>
+        </pre>
+      );
+    }
+    return null;
+  };
+  const parseAIMessage = (msg) => {
+    if (!msg || typeof msg !== 'string') return null;
+    try {
+      const obj = JSON.parse(msg);
+      if (obj && obj.answer && Array.isArray(obj.answer.blocks)) return obj;
+    } catch (e) {}
+    return null;
+  };
+  const parsedAI = parseAIMessage(items.ai_message);
   
   // // Handle temporary processing message
   // if (items.isTemporary) {
@@ -97,7 +146,19 @@ const MessageLoad = ({ items }) => {
       {items.ai_message && (
         <div className="flex justify-start">
           <div className={`p-3 rounded-lg max-w-[70%] ${theme === 'dark' ? 'bg-[#43505568] text-[#ffffff]' : 'bg-[#8a8a8a5a] text-[#222222]'}`}>
-            {items.ai_message}
+            {parsedAI ? (
+              <div className="flex flex-col gap-3">
+                {parsedAI.answer && parsedAI.answer.summary ? (
+                  <>
+                    <p className={`${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{parsedAI.answer.summary}</p>
+                    <hr className={`${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} border-t my-2`} />
+                  </>
+                ) : null}
+                {Array.isArray(parsedAI.answer?.blocks) ? parsedAI.answer.blocks.map((b, idx) => renderBlock(b, idx)) : null}
+              </div>
+            ) : (
+              items.ai_message
+            )}
           </div>
         </div>
       )}
@@ -227,7 +288,7 @@ const Chatbot = ({ courseId, role }) => {
           setTabs(tabIds);
           console.log("Loaded tabs:", tabIds);
           
-          // For each tab, get its messages
+          // For each tab, get its first message for the title only
           snapshot.docs.forEach((tab) => {
             const message_fetch = collection(
               db,
@@ -243,29 +304,21 @@ const Chatbot = ({ courseId, role }) => {
             const message_query = query(
               message_fetch,
               orderBy("created_at"),
-              limit(100)
+              limit(1) // Only get first message for title
             );
             
             onSnapshot(message_query, (msgSnapshot) => {
               const messages = msgSnapshot.docs.map((doc) => doc.data());
-              // Filter out temporary and placeholder messages, keep only real Firestore messages
-              const realMessages = messages.filter(msg => 
-                !msg.isTemporary && 
-                !msg.isWaiting && 
-                !msg.isTranscription
-              );
-              setMessages(realMessages);
-              console.log(`Loaded ${realMessages.length} messages for tab ${tab.id}`);
               
               // Set tab title from first message if available
-              if (realMessages.length > 0 && realMessages[0].human_message) {
+              if (messages.length > 0 && messages[0].human_message) {
                 setTabTitle((prev) => ({
                   ...prev,
-                  [tab.id]: realMessages[0].human_message,
+                  [tab.id]: messages[0].human_message,
                 }));
               }
             }, (error) => {
-              console.error(`Error loading messages for tab ${tab.id}:`, error);
+              console.error(`Error loading title for tab ${tab.id}:`, error);
             });
           });
         } catch (error) {
@@ -273,7 +326,6 @@ const Chatbot = ({ courseId, role }) => {
         }
       }, (error) => {
         console.error("Error loading tabs:", error);
-        console.log("Tabs loaded successfully");
       });
       
       console.log("Current tab:", currentTab);
@@ -297,22 +349,14 @@ const Chatbot = ({ courseId, role }) => {
       created_at: serverTimestamp(),
     });
     
-    setCurrentTab(q.id);
-    
-    // Refresh tabs list
-    const tabs_query = query(
-      collection_ref,
-      orderBy("created_at", "desc"),
-      limit(50)
-    );
-    
-    onSnapshot(tabs_query, (snapshot) => {
-      setTabs(snapshot.docs.map((doc) => doc.id));
-      console.log("New tabs:", snapshot.docs.map((doc) => doc.id));
-    });
-
-    handeActiveTab(q.id);
     console.log("Created new tab with ID:", q.id);
+    
+    // Set the new tab as current and clear messages
+    setCurrentTab(q.id);
+    setMessages([]); // Clear messages for the new empty tab
+    
+    // Activate the new tab to set up message listener
+    handeActiveTab(q.id);
   };
 
   const handeActiveTab = (active_id) => {
@@ -342,19 +386,11 @@ const Chatbot = ({ courseId, role }) => {
       
       // Remove any temporary or waiting messages when real messages arrive
       setMessages(prevMessages => {
-        // Keep only real messages from previous state (not temporary or waiting)
-        const realMessages = prevMessages.filter(msg => 
-          !msg.isTemporary && !msg.isWaiting && !msg.isTranscription
-        );
-        
         // If we have new messages from Firestore, use those
         if (messages.length > 0) {
           console.log(`Loaded ${messages.length} messages for active tab ${active_tab}`);
           return messages;
         }
-        
-        // Otherwise keep the real messages we had before
-        return realMessages;
       });
     }, (error) => {
       console.error(`Error loading messages for tab ${active_tab}:`, error);
@@ -409,7 +445,6 @@ const Chatbot = ({ courseId, role }) => {
     
     try {
       console.log("Stopping recording and waiting for transcription...");
-      
       // Show only audio processing message
       const processingMessage = {
         userId: "system",
@@ -536,7 +571,7 @@ const Chatbot = ({ courseId, role }) => {
                         handeActiveTab(e.target.id);
                         console.log("current tab is " + e.target.id);
                       }}
-                      className={`max-w-[260px] px-6 py-2 rounded-xl font-medium text-sm transition-all duration-200 ease-in-out shadow-sm hover:shadow-md truncate ${
+                      className={`max-w-[260px] px-6  py-2 rounded-xl font-medium text-sm transition-all duration-200 ease-in-out shadow-sm hover:shadow-md truncate ${
                         theme === 'dark'
                           ? 'text-gray-300 bg-gray-800 hover:bg-gray-700 focus:bg-gray-600 focus:text-white'
                           : 'text-gray-700 bg-gray-100 hover:bg-gray-200 focus:bg-blue-100 focus:text-blue-900'
@@ -688,7 +723,7 @@ const Chatbot = ({ courseId, role }) => {
                   {/*chat area*/}
                 <div className={`relative h-[90vh] w-[73vw]  overflow-y-scroll overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] flex flex-col gap-10 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'}`}>
                   {tabs.length > 0 && currentTab != "" ? (
-                    messages.map((items, index) => (
+                    messages &&messages.map((items, index) => (
                       <MessageLoad key={index} items={items} />
                     ))
                   ) : (

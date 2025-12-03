@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, BookOpen, Download, FileText, Video, File, Calendar, User as UserIcon, Clock, ChevronRight } from 'lucide-react';
 import { useTheme } from '../../context/Theme';
 import { db } from '../../firebase_config';
@@ -9,6 +9,11 @@ const StudentCourseMaterials = ({ course, onBack }) => {
   const [weeklyMaterials, setWeeklyMaterials] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(null);
+
+  // Toggle week handler
+  const handleWeekToggle = useCallback((weekNumber) => {
+    setSelectedWeek(prev => prev === weekNumber ? null : weekNumber);
+  }, []);
 
   // Fetch materials from Firestore
   useEffect(() => {
@@ -184,7 +189,7 @@ const StudentCourseMaterials = ({ course, onBack }) => {
             <span className={`ml-3 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>Loading materials...</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" style={{ gridAutoRows: 'auto' }}>
             {[...Array(15)].map((_, index) => {
               const weekNumber = index + 1;
               const materials = weeklyMaterials[weekNumber] || [];
@@ -192,8 +197,13 @@ const StudentCourseMaterials = ({ course, onBack }) => {
               return (
                 <div
                   key={weekNumber}
-                  onClick={() => materials.length > 0 && setSelectedWeek(selectedWeek === weekNumber ? null : weekNumber)}
-                  className={`rounded-xl border-2 transition-all duration-300 ${
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (materials.length > 0) {
+                      handleWeekToggle(weekNumber);
+                    }
+                  }}
+                  className={`rounded-xl border-2 transition-all duration-300 self-start ${
                     materials.length > 0 ? 'cursor-pointer' : 'opacity-50'
                   } ${
                     selectedWeek === weekNumber
@@ -243,6 +253,7 @@ const StudentCourseMaterials = ({ course, onBack }) => {
                         {materials.map((material) => (
                           <div
                             key={material.id}
+                            onClick={(e) => e.stopPropagation()}
                             className={`p-3 rounded-lg transition-all ${
                               theme === "dark"
                                 ? "bg-gray-700/50 hover:bg-gray-700"

@@ -108,8 +108,7 @@ const StudentSidebar = () => {
                             icon={<FaGraduationCap className="text-xl" />} 
                             id="FaBookOpen"
                             label="Select Course" 
-                            onClick={() => {navigate('/Student'); toggleActive('FaBookOpen')}}
-                        />)}
+                            onClick={() => {navigate('/Student'); toggleActive('FaBookOpen')}} />)}
                 </nav>
             </div>
             

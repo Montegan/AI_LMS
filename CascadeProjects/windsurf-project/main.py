@@ -23,8 +23,6 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 # --- Pydantic Models for Request/Response Validation ---
-
-
 def _safe_delattr(obj, name: str):
     if hasattr(obj, name):
         try:
@@ -36,7 +34,7 @@ def _safe_delattr(obj, name: str):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- Startup Logic ---
-    print("INFO:     Starting up application...")
+    print("INFO: Starting up application...")
     load_dotenv()
 
     # Load OpenAI API Key

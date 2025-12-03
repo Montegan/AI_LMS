@@ -16,8 +16,8 @@ import pygame
 
 load_dotenv()
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("PODCAST_CERTIFICATE")
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/simontesfatsion/Desktop/google_credentials.json"
 
 # Initialize pygame mixer for audio playback
 pygame.mixer.init()
@@ -38,7 +38,7 @@ class Content(BaseModel):
 
 class google_parser(BaseModel):
     result: List[Content] = Field(
-        description=" list of conversations between personas")
+        description=" list contaninig conversations between two personas")
 
 
 
@@ -127,7 +127,7 @@ def rag_endpoint(question):
             [("system", system_prompt), ("user", "{question}")])
         # Default to the persistent collection if no course ID is provided
         course_id = "chroma_db_persistent"
-        retriver = get_vector_store(course_id).as_retriever(search_kwargs={"k": 4})
+        retriver = get_vector_store(course_id).as_retriever()
         string_parser = StrOutputParser()
 
         main_chain = {"context": itemgetter("question") | retriver,
@@ -167,7 +167,7 @@ def google_adui(user_question):
 
     
     # if podcast is not working anytime try modifying the below promt don't touch the code.
-    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth, informative and suitable for text-to-speech agents to read aloud. do not mention podcast in the script. follow the format instructions given below to structure the response \n{format_instruction}"),
+    prompt = ChatPromptTemplate.from_messages([("system", " You are an expert in podcast content creation. Your task is to format the provided content into a conversational dialog by creating a script featuring two personas, Rachel and Simon, who discuss the given topic in a podcast setting. Ensure the dialogue is natural, engaging,goes back and forth. do not mention podcast in the script. only follow the format pydantic instructions given below to structure the conversation \n{format_instruction}"),
                                               ("user", "{user_question}")])
 
 
