@@ -13,38 +13,38 @@ const Course_content = ({ course, handleCourseClick }) => {
   const [loading, setLoading] = useState(true);
 
   // Fetch materials from Firestore
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      if (!course || !course.id) return;
-      
-      setLoading(true);
-      try {
-        // Fetch all materials for this course
-        const weeksRef = collection(db, 'materials', course.id, 'weeks');
-        const weeksQuery = query(weeksRef);
-        const weeksSnapshot = await getDocs(weeksQuery);
-        
-        // Group materials by week number
-        const materialsData = {};
-        weeksSnapshot.docs.forEach(doc => {
-          const material = { id: doc.id, ...doc.data() };
-          const weekNum = material.weekNumber;
-          
-          if (!materialsData[weekNum]) {
-            materialsData[weekNum] = [];
-          }
-          materialsData[weekNum].push(material);
-        });
-        
-        setWeeklyMaterials(materialsData);
-      } catch (error) {
-        console.error('Error fetching materials:', error);
-        console.error('Error details:', error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchMaterials = async () => {
+    if (!course || !course.id) return;
     
+    setLoading(true);
+    try {
+      // Fetch all materials for this course
+      const weeksRef = collection(db, 'materials', course.id, 'weeks');
+      const weeksQuery = query(weeksRef);
+      const weeksSnapshot = await getDocs(weeksQuery);
+      
+      // Group materials by week number
+      const materialsData = {};
+      weeksSnapshot.docs.forEach(doc => {
+        const material = { id: doc.id, ...doc.data() };
+        const weekNum = material.weekNumber;
+        
+        if (!materialsData[weekNum]) {
+          materialsData[weekNum] = [];
+        }
+        materialsData[weekNum].push(material);
+      });
+      
+      setWeeklyMaterials(materialsData);
+    } catch (error) {
+      console.error('Error fetching materials:', error);
+      console.error('Error details:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchMaterials();
   }, [course]);
 
@@ -223,7 +223,12 @@ const Course_content = ({ course, handleCourseClick }) => {
       {isUploadModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto relative">
-            <Upload_course_material course={course} handleCourseClick={handleCourseClick} onClose={() => setIsUploadModalOpen(false)} />
+            <Upload_course_material 
+              course={course} 
+              handleCourseClick={handleCourseClick} 
+              onClose={() => setIsUploadModalOpen(false)}
+              onUploadSuccess={fetchMaterials}
+            />
           </div>
         </div>
       )}

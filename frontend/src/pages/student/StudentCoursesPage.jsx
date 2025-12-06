@@ -4,11 +4,20 @@ import ClassEnrollment from './ClassEnrollment';
 import MyCourses from './MyCourses';
 import { useTheme } from '../../context/Theme';
 import StudentSidebar from '../../components/StudentSidebar';
+import { useAuth } from '../../context/auth_context';
+import { Navigate } from 'react-router-dom';
 
 export default function StudentCoursesPage() {
   const [activeTab, setActiveTab] = useState('courses');
+  const { user } = useAuth();
   const { theme } = useTheme();
-
+  
+  if (!user) {
+        return <Navigate to="/" />
+    }
+    if (user.role !== "student") {
+        return <Navigate to="/teacher" />
+    }
   return (
     <div className="max-w-full w-full h-[100vh] flex">
       <StudentSidebar />

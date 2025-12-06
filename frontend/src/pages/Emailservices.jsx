@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
 import { MdGTranslate } from "react-icons/md";
 import { RiUserVoiceFill } from "react-icons/ri";
 import { FaPodcast } from "react-icons/fa6";
@@ -53,26 +54,51 @@ const EmailService = () => {
     console.log(email);
     console.log(subject);
     console.log(reciverAddress);
-    const formData = new FormData();
-    formData.append("file", attachement);
-    formData.append("final_email", email);
-    formData.append("subject", subject);
-    formData.append("reciver", reciverAddress);
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", attachement);
+      formData.append("final_email", email);
+      formData.append("subject", subject);
+      formData.append("reciver", reciverAddress);
 
-    const response = await axios.post(
-      "http://127.0.0.1:5000/sendmail",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axios.post(
+        "http://127.0.0.1:5000/sendmail",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setAlert(response.data);
+      toast.success('Email sent successfully!', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: theme === 'dark' ? '#1e293b' : '#ffffff',
+          color: theme === 'dark' ? '#f1f5f9' : '#0f172a',
+          border: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
         },
-      }
-    );
-    setAlert(response.data);
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error('Failed to send email. Please try again.', {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: theme === 'dark' ? '#1e293b' : '#ffffff',
+          color: theme === 'dark' ? '#f1f5f9' : '#0f172a',
+          border: theme === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
+        },
+      });
+    }
   };
 
   return (
-    <div className={`${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900 text-white' : 'bg-white text-gray-900'} flex items-center h-[100vh] gap-6 w-full`}>
+    <>
+      <Toaster />
+      <div className={`${theme === 'dark' ? 'bg-gradient-to-b from-black to-gray-900 text-white' : 'bg-gradient-to-b from-white to-gray-50 text-gray-900'} flex items-center h-[100vh] gap-6 w-full`}>
     {user.role === "faculty" ? <FacultySidebar/> : <StudentSidebar/> }
       <div className="grid max-sm:grid-cols-1  grid-cols-12 w-full gap-2 h-fit">
         <div className="h-fit min-h-[82vh]  pt-2 col-span-5 flex items-center flex-col ">
@@ -97,7 +123,11 @@ const EmailService = () => {
 
             <button
               onClick={generateEmail}
-              className="bg-green-500 self-center hover:bg-green-600 active:bg-green-700 p-2 text-black text-lg font-bold w-[25vw] rounded-md"
+              className={`self-center p-2 text-lg font-bold w-[25vw] rounded-md transition-colors ${
+                theme === 'dark'
+                  ? 'bg-blue-900 text-blue-100 hover:bg-blue-800 active:bg-blue-700 border border-blue-800'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+              }`}
             >
               Generate Email
             </button>
@@ -186,7 +216,11 @@ const EmailService = () => {
                 />
                 <button
                   onClick={sendEmail}
-                  className="bg-green-500 self-center hover:bg-green-600 active:bg-green-700 p-[8px] text-black text-lg font-bold w-[25vw] rounded-md"
+                  className={`self-center p-[8px] text-lg font-bold w-[25vw] rounded-md transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-blue-900 text-blue-100 hover:bg-blue-800 active:bg-blue-700 border border-blue-800'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+                  }`}
                 >
                   Send Email
                 </button>
@@ -196,6 +230,7 @@ const EmailService = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

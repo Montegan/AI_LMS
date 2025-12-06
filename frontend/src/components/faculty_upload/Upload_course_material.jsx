@@ -16,7 +16,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useTheme } from "../../context/Theme";
 import axios from "axios";
 
-const Upload_course_material = ({ onClose, course, handleCourseClick }) => {
+const Upload_course_material = ({ onClose, course, handleCourseClick, onUploadSuccess }) => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const [courses, setCourses] = useState([]);
@@ -169,6 +169,11 @@ const Upload_course_material = ({ onClose, course, handleCourseClick }) => {
           });
 
           setUploadSuccess(true);
+
+          // Call the onUploadSuccess callback to refresh materials count
+          if (onUploadSuccess) {
+            onUploadSuccess();
+          }
 
           // Refresh the course content if handleCourseClick is provided
           if (handleCourseClick && course) {

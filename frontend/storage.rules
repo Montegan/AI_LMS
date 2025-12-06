@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for AILMS
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check for allowed email domains
+    function isAllowedDomain() {
+      return request.auth.token.email.matches(".*@student\\.sfbu\\.edu") ||
+             request.auth.token.email.matches(".*@sfbu\\.edu");
+    }
+    
+    // Helper function to check if user is faculty
+    function isFaculty() {
+      return request.auth.token.email.matches(".*@sfbu\\.edu") &&
+             !request.auth.token.email.matches(".*@student\\.sfbu\\.edu");
+    }
+    
+    // Helper function to check if user is student
+    function isStudent() {
+      return request.auth.token.email.matches(".*@student\\.sfbu\\.edu");
+    }
+    
+    // Rules for course materials
+    // Path: materials/{courseId}/week_{weekNumber}/{fileName}
+    match /materials/{courseId}/{allPaths=**} {
+      // Faculty can upload, update, and delete course materials
+      allow write: if request.auth != null && isFaculty();
+      
+      // Both faculty and students can read/download materials
+      allow read: if request.auth != null && isAllowedDomain();
+    }
+    
+    // Rules for user profile pictures or other user-specific files
+    match /users/{userId}/{allPaths=**} {
+      // Users can read and write their own files
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Rules for course-related images/assets
+    match /courses/{courseId}/{allPaths=**} {
+      // Faculty can upload course images/assets
+      allow write: if request.auth != null && isFaculty();
+      
+      // Anyone authenticated can read course assets
+      allow read: if request.auth != null && isAllowedDomain();
+    }
+    
+    // Default deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
